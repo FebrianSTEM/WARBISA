@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { inventoryApi } from '../api/inventoryApi';
 import type { Product, CategoryDTO } from '../api/inventoryApi';
 import { posApi } from '../api/posApi';
@@ -79,7 +79,15 @@ export function usePOSTerminal() {
     }
   };
 
+  const lastScanLockRef = useRef<number>(0);
+
   const handleScanSuccess = async (scannedCode: string) => {
+    const now = Date.now();
+    if (now - lastScanLockRef.current < 1000) {
+      return; // 1s scan cooldown delay after scan succeed or failed
+    }
+    lastScanLockRef.current = now;
+
     setSearchQuery(scannedCode);
     try {
       const product = await inventoryApi.getProductBySkuOrBarcode(scannedCode);

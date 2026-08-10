@@ -158,10 +158,8 @@ export const ContinuousRestockModal: React.FC<ContinuousRestockModalProps> = ({
 
       const handleSuccess = (decodedText: string) => {
         const now = Date.now();
-        if (
-          lastScanTimeRef.current.code === decodedText &&
-          now - lastScanTimeRef.current.time < 1500
-        ) {
+        if (now - lastScanTimeRef.current.time < 1200) {
+          // 1.2s scan cooldown delay after scan succeed or failed
           return;
         }
         lastScanTimeRef.current = { code: decodedText, time: now };
