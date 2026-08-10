@@ -229,6 +229,7 @@ export const ContinuousRestockModal: React.FC<ContinuousRestockModalProps> = ({
       setScanError(null);
       setManualCode('');
       setLastScannedProduct(null);
+      setRestockLogs([]); // Fresh log session per restock modal open
 
       if (!isSecureContext && activeTab === 'camera') {
         setScanError('Akses kamera live diblokir karena koneksi HTTP.');
@@ -291,6 +292,8 @@ export const ContinuousRestockModal: React.FC<ContinuousRestockModalProps> = ({
 
   const handleClose = async () => {
     await stopCamera();
+    setRestockLogs([]);
+    setLastScannedProduct(null);
     onClose();
   };
 
