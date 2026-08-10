@@ -1,15 +1,24 @@
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Warbisa.API.Middlewares;
 
 public class CustomExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
+    private readonly ILogger<CustomExceptionHandlerMiddleware> _logger;
+    private readonly IWebHostEnvironment _env;
 
-    public CustomExceptionHandlerMiddleware(RequestDelegate next)
+    public CustomExceptionHandlerMiddleware(
+        RequestDelegate next,
+        ILogger<CustomExceptionHandlerMiddleware> logger,
+        IWebHostEnvironment env)
     {
         _next = next;
+        _logger = logger;
+        _env = env;
     }
 
     public async Task Invoke(HttpContext context)
@@ -24,10 +33,10 @@ public class CustomExceptionHandlerMiddleware
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         var statusCode = HttpStatusCode.InternalServerError;
-        var message = exception.Message;
+        string message;
 
         switch (exception)
         {
@@ -43,14 +52,25 @@ public class CustomExceptionHandlerMiddleware
             case InvalidOperationException:
             case ArgumentException:
                 statusCode = HttpStatusCode.BadRequest;
+                message = exception.Message;
                 break;
 
             case KeyNotFoundException:
                 statusCode = HttpStatusCode.NotFound;
+                message = exception.Message;
                 break;
 
             case UnauthorizedAccessException:
                 statusCode = HttpStatusCode.Unauthorized;
+                message = exception.Message;
+                break;
+
+            default:
+                // Log the real error server-side; never expose internals to client
+                _logger.LogError(exception, "Unhandled exception at {Path}", context.Request.Path);
+                message = _env.IsDevelopment()
+                    ? exception.Message
+                    : "Terjadi kesalahan internal server. Hubungi administrator.";
                 break;
         }
 

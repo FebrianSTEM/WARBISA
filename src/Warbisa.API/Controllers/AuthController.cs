@@ -45,6 +45,7 @@ public class AuthController : ControllerBase
 
     [HttpPost("register")]
     [AllowAnonymous]
+    [EnableRateLimiting("RegisterLimiter")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
         var validationResult = await _registerValidator.ValidateAsync(request);
