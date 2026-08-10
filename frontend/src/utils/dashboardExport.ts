@@ -58,14 +58,20 @@ export const exportDashboardToExcel = (metrics: DashboardAnalyticsResponse, peri
 };
 
 export const exportDashboardToPDF = (metrics: DashboardAnalyticsResponse, period: string) => {
-  const printWindow = window.open('', '_blank');
-  if (!printWindow) return;
-
   const dateStr = new Date().toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
+
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -192,16 +198,24 @@ export const exportDashboardToPDF = (metrics: DashboardAnalyticsResponse, period
       <div class="footer">
         Laporan resmi dibuat otomatis oleh Sistem Point of Sale & Inventory WASERBI.
       </div>
-
-      <script>
-        window.onload = function() {
-          window.print();
-        }
-      </script>
     </body>
     </html>
   `;
 
-  printWindow.document.write(htmlContent);
-  printWindow.document.close();
+  const doc = iframe.contentWindow?.document || iframe.contentDocument;
+  if (!doc) return;
+
+  doc.open();
+  doc.write(htmlContent);
+  doc.close();
+
+  setTimeout(() => {
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+    setTimeout(() => {
+      if (document.body.contains(iframe)) {
+        document.body.removeChild(iframe);
+      }
+    }, 1000);
+  }, 300);
 };
