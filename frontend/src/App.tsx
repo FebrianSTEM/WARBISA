@@ -45,15 +45,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-        {/* Mobile Backdrop Overlay when Sidebar is open on small screens */}
-        {isSidebarOpen && (
-          <div
-            onClick={() => setIsSidebarOpen(false)}
-            className="md:hidden fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-30 transition-opacity animate-in fade-in"
-          />
-        )}
+        {/* Mobile Backdrop Overlay */}
+        <div
+          onClick={() => setIsSidebarOpen(false)}
+          className={`md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 transition-opacity duration-300 ${
+            isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
+        />
 
-        <main className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-6 overflow-y-auto transition-all duration-300 ease-in-out">
           <Outlet />
         </main>
       </div>

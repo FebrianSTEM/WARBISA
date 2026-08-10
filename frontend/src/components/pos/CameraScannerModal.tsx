@@ -159,11 +159,8 @@ export const CameraScannerModal: React.FC<CameraScannerModalProps> = ({
 
       const handleSuccess = (decodedText: string) => {
         const now = Date.now();
-        if (
-          lastScanTimeRef.current.code === decodedText &&
-          now - lastScanTimeRef.current.time < 1500
-        ) {
-          // 1.5s cooldown for identical barcode
+        if (now - lastScanTimeRef.current.time < 1200) {
+          // 1.2s scan cooldown delay after scan succeed or failed
           return;
         }
         lastScanTimeRef.current = { code: decodedText, time: now };

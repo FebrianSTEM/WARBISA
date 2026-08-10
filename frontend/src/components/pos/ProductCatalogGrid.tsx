@@ -107,7 +107,7 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
 
       const handleScan = (decodedText: string) => {
         const now = Date.now();
-        if (lastScanTimeRef.current.code === decodedText && now - lastScanTimeRef.current.time < 1500) return;
+        if (now - lastScanTimeRef.current.time < 1200) return; // 1.2s scan cooldown delay after scan succeed or failed
         lastScanTimeRef.current = { code: decodedText, time: now };
         playBeep();
         onScanSuccess(decodedText);
