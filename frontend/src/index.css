@@ -39,3 +39,41 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
 }
+
+/* HTML5-QRCode Scanner Custom Styling (Clean full-bleed camera feed) */
+#reader {
+  border: none !important;
+  position: relative;
+  background: #0f172a !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 220px;
+  overflow: hidden;
+  border-radius: 0.75rem;
+}
+
+#reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 0.75rem;
+}
+
+/* Hide annoying html5-qrcode shaded region overlay, laser bar animations & guide lines */
+#reader #qr-shaded-region,
+#reader canvas,
+#reader img[alt="Scanner guide"],
+#reader img[src*="data:image"],
+#reader__scan_region img {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+/* Hide html5-qrcode default dashboard, headers, and status text */
+#reader__dashboard,
+#reader__status_span,
+#reader__header_message {
+  display: none !important;
+}
+

@@ -67,8 +67,8 @@ export const CameraScannerModal: React.FC<CameraScannerModalProps> = ({
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [isStartingCamera, setIsStartingCamera] = useState(false);
   const [activeTab, setActiveTab] = useState<'camera' | 'file' | 'manual'>('camera');
-  const [manualCode, setManualCode] = useState('');
   const [showHelp, setShowHelp] = useState(false);
+  const [showGuideline, setShowGuideline] = useState(false);
 
   const lastScanTimeRef = useRef<{ code: string; time: number }>({ code: '', time: 0 });
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
@@ -142,13 +142,6 @@ export const CameraScannerModal: React.FC<CameraScannerModalProps> = ({
 
       const qrConfig = {
         fps: 15,
-        qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          return {
-            width: Math.max(220, Math.floor(minEdge * 0.85)),
-            height: Math.max(140, Math.floor(minEdge * 0.5)),
-          };
-        },
         formatsToSupport: [
           Html5QrcodeSupportedFormats.EAN_13,
           Html5QrcodeSupportedFormats.EAN_8,
@@ -468,15 +461,28 @@ export const CameraScannerModal: React.FC<CameraScannerModalProps> = ({
               )}
 
               <div className="flex items-center justify-between text-xs text-slate-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-                <span className="font-medium text-[11px]">Scan barang tanpa henti (non-stop scanner).</span>
-                <button
-                  type="button"
-                  onClick={() => startLiveCamera(selectedCameraId)}
-                  className="text-emerald-700 font-bold hover:text-emerald-900 flex items-center gap-1 text-[11px] cursor-pointer"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  <span>Refresh</span>
-                </button>
+                <span className="font-medium text-[11px]">Scan barang tanpa henti (kamera bersih full screen).</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowGuideline(!showGuideline)}
+                    className={`font-bold transition-colors text-[11px] px-2 py-0.5 rounded cursor-pointer ${
+                      showGuideline
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                    }`}
+                  >
+                    {showGuideline ? 'Sembunyikan Frame' : 'Frame Bantuan'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => startLiveCamera(selectedCameraId)}
+                    className="text-emerald-700 font-bold hover:text-emerald-900 flex items-center gap-1 text-[11px] cursor-pointer"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Refresh</span>
+                  </button>
+                </div>
               </div>
 
               {scanError ? (
@@ -506,6 +512,16 @@ export const CameraScannerModal: React.FC<CameraScannerModalProps> = ({
                     <div className="absolute inset-0 z-10 bg-slate-900/80 flex flex-col items-center justify-center text-white text-xs font-bold gap-2">
                       <RefreshCw className="w-5 h-5 animate-spin text-emerald-400" />
                       <span>Menghubungkan Kamera...</span>
+                    </div>
+                  )}
+                  {showGuideline && (
+                    <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
+                      <div className="w-48 h-28 border border-emerald-400/40 rounded-xl relative">
+                        <div className="absolute -top-1 -left-1 w-3.5 h-3.5 border-t-2 border-l-2 border-emerald-400 rounded-tl"></div>
+                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 border-t-2 border-r-2 border-emerald-400 rounded-tr"></div>
+                        <div className="absolute -bottom-1 -left-1 w-3.5 h-3.5 border-b-2 border-l-2 border-emerald-400 rounded-bl"></div>
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 border-b-2 border-r-2 border-emerald-400 rounded-br"></div>
+                      </div>
                     </div>
                   )}
                   <div id="reader" className="w-full h-full min-h-[200px]"></div>
