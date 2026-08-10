@@ -1,6 +1,9 @@
-name: Deploy to VPS (Main Branch Release Only)
+name: Deploy to VPS
 
 on:
+  push:
+    branches:
+      - main
   release:
     types: [published]
   workflow_dispatch:
@@ -10,8 +13,8 @@ jobs:
     name: Deploy WASERBI to VPS
     runs-on: ubuntu-latest
 
-    # Ensure deployment triggers only for releases targeting 'main' branch (or manual run on main)
     if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'release' && github.event.release.target_commitish == 'main')
 

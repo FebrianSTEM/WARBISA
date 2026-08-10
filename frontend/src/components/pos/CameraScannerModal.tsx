@@ -517,11 +517,17 @@ export const CameraScannerModal: React.FC<CameraScannerModalProps> = ({
                   )}
                   {showGuideline && (
                     <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
-                      <div className="w-48 h-28 border border-emerald-400/40 rounded-xl relative">
-                        <div className="absolute -top-1 -left-1 w-3.5 h-3.5 border-t-2 border-l-2 border-emerald-400 rounded-tl"></div>
-                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 border-t-2 border-r-2 border-emerald-400 rounded-tr"></div>
-                        <div className="absolute -bottom-1 -left-1 w-3.5 h-3.5 border-b-2 border-l-2 border-emerald-400 rounded-bl"></div>
-                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 border-b-2 border-r-2 border-emerald-400 rounded-br"></div>
+                      <div className="w-52 h-32 border border-emerald-400/30 rounded-2xl relative flex items-center justify-center">
+                        {/* Corner brackets */}
+                        <div className="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-emerald-400 rounded-tl-lg"></div>
+                        <div className="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-emerald-400 rounded-tr-lg"></div>
+                        <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-emerald-400 rounded-bl-lg"></div>
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-emerald-400 rounded-br-lg"></div>
+                        {/* Center laser guide line */}
+                        <div className="w-full border-t border-dashed border-emerald-400/40"></div>
+                        <span className="absolute -bottom-6 text-[10px] font-bold text-emerald-300 bg-slate-900/80 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                          Arahkan Barcode ke Sini
+                        </span>
                       </div>
                     </div>
                   )}
