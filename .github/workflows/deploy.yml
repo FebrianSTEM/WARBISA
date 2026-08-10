@@ -1,0 +1,56 @@
+name: Deploy to VPS (Main Branch Release Only)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy WASERBI to VPS
+    runs-on: ubuntu-latest
+
+    # Ensure deployment triggers only for releases targeting 'main' branch (or manual run on main)
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'release' && github.event.release.target_commitish == 'main')
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Sync files to VPS via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "."
+          target: ${{ secrets.VPS_TARGET_DIR || '/var/www/waserbi' }}
+          rm: false
+
+      - name: Build & Deploy Docker Containers on VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            cd ${{ secrets.VPS_TARGET_DIR || '/var/www/waserbi' }}
+            
+            # Initialize .env file if it does not exist on VPS
+            if [ ! -f .env ]; then
+              echo "Creating .env from .env.example..."
+              cp .env.example .env
+            fi
+            
+            echo "Rebuilding and restarting WASERBI containers..."
+            docker compose down --remove-orphans || true
+            docker compose up -d --build
+            
+            echo "Cleaning up unused Docker build artifacts..."
+            docker image prune -f
+            
+            echo "Deployment successful!"
