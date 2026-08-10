@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { inventoryApi } from '../api/inventoryApi';
-import type { Product, CreateProductRequest } from '../api/inventoryApi';
+import type { Product, CreateProductRequest, CategoryDTO } from '../api/inventoryApi';
 import { ProductTable } from '../components/inventory/ProductTable';
 import { ProductFormModal } from '../components/inventory/ProductFormModal';
 import { StockAdjustModal } from '../components/inventory/StockAdjustModal';
@@ -26,7 +26,7 @@ export const InventoryPage: React.FC = () => {
   const isOwner = user?.roleName === 'Owner';
 
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
-  const [categories, setCategories] = useState<string[]>(['Sembako', 'Minuman', 'Makanan']);
+  const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -49,12 +49,12 @@ export const InventoryPage: React.FC = () => {
       setProducts(data);
       const cats = await inventoryApi.getCategories();
       if (cats && cats.length > 0) {
-        setCategories(cats.map((c) => c.name));
+        setCategories(cats);
       }
     } catch {
       let filtered = MOCK_PRODUCTS;
       if (selectedCategory) {
-        filtered = filtered.filter((p) => p.categoryName === selectedCategory);
+        filtered = filtered.filter((p) => p.categoryId === selectedCategory);
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
@@ -299,8 +299,8 @@ export const InventoryPage: React.FC = () => {
           >
             <option value="">Semua Kategori</option>
             {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
               </option>
             ))}
           </select>
@@ -377,7 +377,7 @@ export const InventoryPage: React.FC = () => {
           try {
             const cats = await inventoryApi.getCategories();
             if (cats && cats.length > 0) {
-              setCategories(cats.map((c) => c.name));
+              setCategories(cats);
             }
           } catch {}
           fetchProducts();

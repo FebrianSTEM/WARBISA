@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { inventoryApi } from '../../api/inventoryApi';
-import type { Product, CreateProductRequest } from '../../api/inventoryApi';
+import type { Product, CreateProductRequest, CategoryDTO } from '../../api/inventoryApi';
 import { Modal } from '../common/Modal';
 
 interface ProductFormModalProps {
@@ -8,12 +8,10 @@ interface ProductFormModalProps {
   onClose: () => void;
   onSubmit: (data: CreateProductRequest) => Promise<void>;
   initialData?: Partial<Product> | null;
-  categories: string[];
+  categories: CategoryDTO[];
 }
 
-interface ProductFormState extends CreateProductRequest {
-  categoryName?: string;
-}
+interface ProductFormState extends CreateProductRequest {}
 
 export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   isOpen,
@@ -22,12 +20,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   initialData,
   categories,
 }) => {
-  const [availableCategories, setAvailableCategories] = useState<string[]>(categories);
+  const [availableCategories, setAvailableCategories] = useState<CategoryDTO[]>(categories);
   const [formData, setFormData] = useState<ProductFormState>({
     sku: '',
     barcode: '',
     name: '',
-    categoryName: 'Sembako',
+    categoryId: '',
     unit: 'Pcs',
     costPrice: 0,
     sellingPrice: 0,
@@ -44,18 +42,17 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       try {
         const fetched = await inventoryApi.getCategories();
         if (fetched && fetched.length > 0) {
-          activeCats = fetched.map((c) => c.name);
+          activeCats = fetched;
         }
       } catch {}
       setAvailableCategories(activeCats);
 
       if (initialData) {
         setFormData({
-          categoryId: initialData.categoryId,
           sku: initialData.sku || `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
           barcode: initialData.barcode || '',
           name: initialData.name || '',
-          categoryName: initialData.categoryName || activeCats[0] || 'Sembako',
+          categoryId: initialData.categoryId || (activeCats.length > 0 ? activeCats[0].id : ''),
           unit: initialData.unit || 'Pcs',
           costPrice: initialData.costPrice || 0,
           sellingPrice: initialData.sellingPrice || 0,
@@ -67,7 +64,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           sku: `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
           barcode: `899${Math.floor(1000000000 + Math.random() * 9000000000)}`,
           name: '',
-          categoryName: activeCats[0] || 'Sembako',
+          categoryId: activeCats.length > 0 ? activeCats[0].id : '',
           unit: 'Pcs',
           costPrice: 0,
           sellingPrice: 0,
@@ -183,15 +180,15 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Kategori Produk</label>
             <select
-              value={formData.categoryName}
-              onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
+              value={formData.categoryId || ''}
+              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
               className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
             >
               {availableCategories.length === 0 && (
                 <option value="" disabled>Belum ada kategori</option>
               )}
               {availableCategories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
           </div>
