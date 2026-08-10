@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import type { Product } from '../../api/inventoryApi';
-import { Search, Camera, Plus, PackageX, Video, X } from 'lucide-react';
+import { Search, Camera, Plus, PackageX } from 'lucide-react';
 import { Badge } from '../common/Badge';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface ProductCatalogGridProps {
   products: Product[];
@@ -25,14 +24,9 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
   searchQuery,
   onSearchChange,
   onAddToCart,
-  onScanSuccess,
   onOpenScannerModal,
   isLoading,
 }) => {
-  const [isInlineCameraOpen, setIsInlineCameraOpen] = useState(false);
-  const inlineQrCodeRef = useRef<Html5Qrcode | null>(null);
-  const lastScanTimeRef = useRef<{ code: string; time: number }>({ code: '', time: 0 });
-
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -40,110 +34,6 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
       maximumFractionDigits: 0,
     }).format(val);
   };
-
-  const stopInlineCamera = async () => {
-    if (inlineQrCodeRef.current) {
-      try {
-        if (inlineQrCodeRef.current.isScanning) {
-          await inlineQrCodeRef.current.stop();
-        }
-        inlineQrCodeRef.current.clear();
-      } catch (e) {
-        console.error('Error stopping inline camera:', e);
-      }
-      inlineQrCodeRef.current = null;
-    }
-  };
-
-  const playBeep = () => {
-    try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 880;
-      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.15);
-    } catch {}
-  };
-
-  const startInlineCamera = async () => {
-    await stopInlineCamera();
-    try {
-      const readerElem = document.getElementById('inline-reader');
-      if (!readerElem) return;
-
-      const html5QrCode = new Html5Qrcode('inline-reader');
-      inlineQrCodeRef.current = html5QrCode;
-
-      const qrConfig = {
-        fps: 15,
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.UPC_A,
-          Html5QrcodeSupportedFormats.UPC_E,
-          Html5QrcodeSupportedFormats.QR_CODE,
-        ],
-      };
-
-      const handleScan = (decodedText: string) => {
-        const now = Date.now();
-        if (
-          lastScanTimeRef.current.code === decodedText &&
-          now - lastScanTimeRef.current.time < 1500
-        ) {
-          return;
-        }
-        lastScanTimeRef.current = { code: decodedText, time: now };
-        playBeep();
-        onScanSuccess(decodedText);
-      };
-
-      try {
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length > 0) {
-          let chosenId = devices[0].id;
-          const backCam = devices.find((d) =>
-            d.label.toLowerCase().includes('back') ||
-            d.label.toLowerCase().includes('rear') ||
-            d.label.toLowerCase().includes('environment')
-          );
-          if (backCam) chosenId = backCam.id;
-          await html5QrCode.start(chosenId, qrConfig, handleScan, () => {});
-          return;
-        }
-      } catch {}
-
-      try {
-        await html5QrCode.start({ facingMode: 'environment' }, qrConfig, handleScan, () => {});
-      } catch {
-        await html5QrCode.start({ facingMode: 'user' }, qrConfig, handleScan, () => {});
-      }
-    } catch (e) {
-      console.error('Inline camera error:', e);
-    }
-  };
-
-  useEffect(() => {
-    if (isInlineCameraOpen) {
-      const timer = setTimeout(() => {
-        startInlineCamera();
-      }, 200);
-      return () => {
-        clearTimeout(timer);
-        stopInlineCamera();
-      };
-    } else {
-      stopInlineCamera();
-    }
-  }, [isInlineCameraOpen]);
 
   return (
     <div className="flex flex-col h-full space-y-4">
@@ -160,49 +50,16 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
           />
         </div>
 
-        {/* Toggle Inline Camera Scanner */}
-        <button
-          onClick={() => setIsInlineCameraOpen(!isInlineCameraOpen)}
-          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-xs shadow-xs transition-colors shrink-0 cursor-pointer border ${
-            isInlineCameraOpen
-              ? 'bg-rose-50 border-rose-300 text-rose-700 hover:bg-rose-100'
-              : 'bg-emerald-50 border-emerald-300 text-emerald-800 hover:bg-emerald-100'
-          }`}
-          title="Tampilkan / Sembunyikan Scanner Kamera Langsung di Layar Kasir"
-        >
-          {isInlineCameraOpen ? <X className="w-4 h-4" /> : <Video className="w-4 h-4 text-emerald-600" />}
-          <span>{isInlineCameraOpen ? 'Tutup Live Cam' : 'Kamera Live'}</span>
-        </button>
-
-        {/* Open Modal Scanner */}
+        {/* Unified Scan Barcode Button (Matches Inventory Management Page Design) */}
         <button
           onClick={onOpenScannerModal}
-          className="flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0 cursor-pointer"
-          title="Buka Modal Scanner Barcode"
+          className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0 cursor-pointer"
+          title="Scan Barcode Produk untuk Cari / Masukkan ke Keranjang"
         >
           <Camera className="w-4 h-4 text-emerald-400" />
-          <span className="hidden sm:inline">Modal Scanner</span>
+          <span>Scan Barcode</span>
         </button>
       </div>
-
-      {/* Inline Camera Box */}
-      {isInlineCameraOpen && (
-        <div className="bg-slate-900 rounded-2xl border border-slate-700 p-2 relative flex flex-col items-center justify-center shrink-0">
-          <div className="flex items-center justify-between w-full text-white text-xs px-2 py-1 mb-1 font-semibold">
-            <span className="flex items-center gap-1.5 text-emerald-400">
-              <Video className="w-4 h-4 animate-pulse" />
-              <span>Scanner Kamera Langsung (Arahkan Barcode ke Kamera)</span>
-            </span>
-            <button
-              onClick={() => setIsInlineCameraOpen(false)}
-              className="text-slate-400 hover:text-white p-0.5 rounded-md"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <div id="inline-reader" className="w-full max-w-md aspect-video rounded-xl overflow-hidden bg-black"></div>
-        </div>
-      )}
 
       {/* Category Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar shrink-0">
