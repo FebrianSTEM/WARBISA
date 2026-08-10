@@ -67,6 +67,7 @@ export const CameraScannerModal: React.FC<CameraScannerModalProps> = ({
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [isStartingCamera, setIsStartingCamera] = useState(false);
   const [activeTab, setActiveTab] = useState<'camera' | 'file' | 'manual'>('camera');
+  const [manualCode, setManualCode] = useState('');
   const [showHelp, setShowHelp] = useState(false);
   const [showGuideline, setShowGuideline] = useState(false);
 
