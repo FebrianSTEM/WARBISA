@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { inventoryApi } from '../api/inventoryApi';
-import type { Product } from '../api/inventoryApi';
+import type { Product, CategoryDTO } from '../api/inventoryApi';
 import { posApi } from '../api/posApi';
 import type { TransactionReceiptResponse } from '../api/posApi';
 import { useCartStore } from '../store/useCartStore';
@@ -23,7 +23,7 @@ const MOCK_PRODUCTS: Product[] = [
 
 export const POSPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
-  const [categories, setCategories] = useState<string[]>(['Sembako', 'Minuman', 'Makanan']);
+  const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -44,11 +44,11 @@ export const POSPage: React.FC = () => {
       setProducts(data);
 
       const cats = await inventoryApi.getCategories();
-      if (cats && cats.length > 0) setCategories(cats.map(c => c.name));
+      if (cats && cats.length > 0) setCategories(cats);
     } catch {
       let filtered = MOCK_PRODUCTS;
       if (selectedCategory) {
-        filtered = filtered.filter((p) => p.categoryName === selectedCategory);
+        filtered = filtered.filter((p) => p.categoryId === selectedCategory || (!p.categoryId && p.categoryName === categories.find(c => c.id === selectedCategory)?.name));
       }
       if (searchQuery) {
         const q = searchQuery.toLowerCase();

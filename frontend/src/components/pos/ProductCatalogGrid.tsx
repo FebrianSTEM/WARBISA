@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import type { Product } from '../../api/inventoryApi';
+import type { Product, CategoryDTO } from '../../api/inventoryApi';
 import { Search, Camera, Plus, PackageX, Video, RefreshCw, AlertCircle, X } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface ProductCatalogGridProps {
   products: Product[];
-  categories: string[];
+  categories: CategoryDTO[];
   selectedCategory: string;
   onSelectCategory: (category: string) => void;
   searchQuery: string;
@@ -277,15 +277,15 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
         </button>
         {categories.map((cat) => (
           <button
-            key={cat}
-            onClick={() => onSelectCategory(cat)}
-            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
-              selectedCategory === cat
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+            key={cat.id}
+            onClick={() => onSelectCategory(cat.id)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors border ${
+              selectedCategory === cat.id
+                ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
-            {cat}
+            {cat.name}
           </button>
         ))}
       </div>
