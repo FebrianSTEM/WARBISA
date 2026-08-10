@@ -24,6 +24,9 @@ public class DashboardService : IDashboardService
 
         switch (freq)
         {
+            case "weekly":
+                startDate = now.Date.AddDays(-7);
+                break;
             case "monthly":
                 startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
                 break;
@@ -67,7 +70,7 @@ public class DashboardService : IDashboardService
             .OrderByDescending(p => p.TotalAmount)
             .ToList();
 
-        // Top Selling Products
+        // Top 10 Revenue Products
         var topProducts = transactions
             .SelectMany(t => t.Items)
             .GroupBy(i => new { i.ProductId, ProductName = i.Product != null ? i.Product.Name : "Produk", Sku = i.Product != null ? i.Product.Sku : "" })
@@ -79,9 +82,9 @@ public class DashboardService : IDashboardService
                 TotalQuantitySold = g.Sum(i => i.Quantity),
                 TotalRevenue = g.Sum(i => i.Subtotal)
             })
-            .OrderByDescending(p => p.TotalQuantitySold)
-            .ThenByDescending(p => p.TotalRevenue)
-            .Take(5)
+            .OrderByDescending(p => p.TotalRevenue)
+            .ThenByDescending(p => p.TotalQuantitySold)
+            .Take(10)
             .ToList();
 
         // Low stock count

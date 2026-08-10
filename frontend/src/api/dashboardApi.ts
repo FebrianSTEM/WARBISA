@@ -16,7 +16,7 @@ export interface TopSellingProduct {
 }
 
 export interface DashboardAnalyticsResponse {
-  frequency: string; // 'daily', 'monthly', 'yearly'
+  frequency: string; // 'daily', 'weekly', 'monthly', 'yearly'
   grossSales: number;
   netRevenue: number;
   totalTransactions: number;
@@ -26,7 +26,7 @@ export interface DashboardAnalyticsResponse {
 }
 
 export const dashboardApi = {
-  getAnalytics: async (frequency: 'daily' | 'monthly' | 'yearly' = 'daily'): Promise<DashboardAnalyticsResponse> => {
+  getAnalytics: async (frequency: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'daily'): Promise<DashboardAnalyticsResponse> => {
     const response = await axiosClient.get<DashboardAnalyticsResponse>('/dashboard/analytics', {
       params: { frequency },
     });

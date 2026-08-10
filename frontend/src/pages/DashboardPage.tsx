@@ -28,7 +28,7 @@ const MOCK_METRICS: DashboardAnalyticsResponse = {
 
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
-  const [period, setPeriod] = useState<'daily' | 'monthly' | 'yearly'>('daily');
+  const [period, setPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('daily');
   const [metrics, setMetrics] = useState<DashboardAnalyticsResponse>(MOCK_METRICS);
 
   const fetchMetrics = async () => {
@@ -77,6 +77,16 @@ export const DashboardPage: React.FC = () => {
             }`}
           >
             Harian
+          </button>
+          <button
+            onClick={() => setPeriod('weekly')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              period === 'weekly'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            Mingguan
           </button>
           <button
             onClick={() => setPeriod('monthly')}
@@ -142,9 +152,9 @@ export const DashboardPage: React.FC = () => {
       {/* Recharts Component */}
       <RevenueChart paymentDistributions={metrics.paymentMethods} />
 
-      {/* Top 5 Best Seller Products */}
+      {/* Top 10 Best Revenue Products */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3">
-        <h3 className="font-bold text-slate-900 text-base">Top 5 Produk Paling Laris</h3>
+        <h3 className="font-bold text-slate-900 text-base">Top 10 Produk Revenue Tertinggi</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>

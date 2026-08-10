@@ -13,6 +13,6 @@ describe('DashboardPage Component', () => {
     expect(screen.getByText(/Dashboard Finansial & Omset/i)).toBeInTheDocument();
     expect(screen.getByText(/Gross Omset/i)).toBeInTheDocument();
     expect(screen.getByText(/Profit Bersih \(Net\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Top 5 Produk Paling Laris/i)).toBeInTheDocument();
+    expect(screen.getByText(/Top 10 Produk Revenue Tertinggi/i)).toBeInTheDocument();
   });
 });
