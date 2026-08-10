@@ -8,6 +8,7 @@ import {
   BarChart3,
   LayoutDashboard,
   Settings,
+  ChevronRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -43,41 +44,66 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <aside className="fixed md:static inset-y-0 left-0 z-40 w-64 bg-white/95 backdrop-blur-md border-r border-slate-200/80 min-h-[calc(100vh-65px)] p-4 flex flex-col justify-between shrink-0 shadow-lg md:shadow-none transition-all duration-300">
-      <div className="space-y-1.5">
-        <p className="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-          Menu Utama
-        </p>
-        {activeMenus.map((menu) => {
-          const IconComponent = iconMap[menu.iconName] || ShoppingCart;
+    <aside className="fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-50/70 backdrop-blur-md border-r border-slate-200/50 min-h-[calc(100vh-65px)] p-4 flex flex-col justify-between shrink-0 shadow-lg md:shadow-none transition-all duration-300">
+      <div className="space-y-2">
+        <div className="px-3 py-1 flex items-center justify-between">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            Menu Utama
+          </p>
+          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+            {user?.roleName || 'Kasir'}
+          </span>
+        </div>
 
-          return (
-            <NavLink
-              key={menu.id || menu.path}
-              to={menu.path}
-              onClick={() => {
-                if (window.innerWidth < 768 && onClose) {
-                  onClose();
+        <nav className="space-y-1.5">
+          {activeMenus.map((menu) => {
+            const IconComponent = iconMap[menu.iconName] || ShoppingCart;
+
+            return (
+              <NavLink
+                key={menu.id || menu.path}
+                to={menu.path}
+                onClick={() => {
+                  if (window.innerWidth < 768 && onClose) {
+                    onClose();
+                  }
+                }}
+                className={({ isActive }) =>
+                  `group relative flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-200 ${
+                    isActive
+                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/25 translate-x-1'
+                      : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                  }`
                 }
-              }}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all ${
-                  isActive
-                    ? 'bg-emerald-50 text-emerald-700 shadow-xs border border-emerald-200/80 translate-x-1'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                }`
-              }
-            >
-              <IconComponent className="w-5 h-5 shrink-0" />
-              <span>{menu.title}</span>
-            </NavLink>
-          );
-        })}
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className="flex items-center gap-3">
+                      <IconComponent
+                        className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
+                          isActive ? 'text-white' : 'text-slate-500 group-hover:text-emerald-700'
+                        }`}
+                      />
+                      <span>{menu.title}</span>
+                    </div>
+
+                    {isActive && (
+                      <ChevronRight className="w-4 h-4 text-emerald-100/90 animate-pulse" />
+                    )}
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
+        </nav>
       </div>
 
-      <div className="p-3.5 bg-emerald-50/50 rounded-2xl border border-emerald-100/80 text-xs text-slate-500">
-        <p className="font-extrabold text-emerald-800">WASERBI v1.2</p>
-        <p className="mt-0.5 text-slate-500 font-medium">Point of Sale & Realtime Stock Ledger</p>
+      <div className="p-3.5 bg-white/80 backdrop-blur-xs rounded-2xl border border-slate-200/60 shadow-2xs space-y-1">
+        <div className="flex items-center justify-between">
+          <p className="font-extrabold text-slate-800 text-xs">WASERBI POS</p>
+          <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">v1.2</span>
+        </div>
+        <p className="text-[11px] text-slate-500 font-medium">Sistem Kasir & Stock Ledger Realtime</p>
       </div>
     </aside>
   );
