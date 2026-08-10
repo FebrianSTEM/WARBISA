@@ -1,24 +1,31 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Warbisa.Application.Common.Interfaces;
+using Warbisa.Application.DTOs.Payments;
 using Warbisa.Application.DTOs.POS;
 using Warbisa.Domain.Entities;
 
 namespace Warbisa.Infrastructure.Services;
 
-public class POSService : IPOSService
+public class TransactionEngine : ITransactionEngine
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
     private readonly IMidtransService _midtransService;
+    private readonly MidtransSettings _settings;
 
-    public POSService(
+    public TransactionEngine(
         IApplicationDbContext context,
         ICurrentUserService currentUserService,
-        IMidtransService midtransService)
+        IMidtransService midtransService,
+        IOptions<MidtransSettings> options)
     {
         _context = context;
         _currentUserService = currentUserService;
         _midtransService = midtransService;
+        _settings = options.Value;
     }
 
     private Guid GetCurrentWarungId()
@@ -31,7 +38,7 @@ public class POSService : IPOSService
         return _currentUserService.UserId ?? throw new UnauthorizedAccessException("UserId tidak ditemukan pada sesi pengguna.");
     }
 
-    public async Task<TransactionDto> CreateCheckoutTransactionAsync(POSCheckoutRequest request)
+    public async Task<TransactionDto> ProcessCheckoutAsync(POSCheckoutRequest request)
     {
         var warungId = GetCurrentWarungId();
         var userId = GetCurrentUserId();
@@ -41,13 +48,11 @@ public class POSService : IPOSService
             throw new InvalidOperationException("Daftar belanjaan tidak boleh kosong.");
         }
 
-        // Distinct product IDs requested
         var productIds = request.Items.Select(i => i.ProductId).Distinct().ToList();
         var products = await _context.Products
-            .Where(p => productIds.Contains(p.Id))
+            .Where(p => p.WarungId == warungId && productIds.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id);
 
-        // Validate products existence and stock availability
         foreach (var item in request.Items)
         {
             if (!products.TryGetValue(item.ProductId, out var product))
@@ -61,7 +66,6 @@ public class POSService : IPOSService
             }
         }
 
-        // Generate Invoice Number
         var todayStr = DateTime.UtcNow.ToString("yyyyMMdd");
         var randomPart = Random.Shared.Next(1000, 9999);
         var invoiceNo = $"INV-{todayStr}-{randomPart}";
@@ -104,7 +108,6 @@ public class POSService : IPOSService
         }
 
         transaction.TotalAmount = totalAmount;
-
         var isCash = string.Equals(request.PaymentMethod, "Cash", StringComparison.OrdinalIgnoreCase);
 
         if (isCash)
@@ -118,14 +121,14 @@ public class POSService : IPOSService
             transaction.PaymentStatus = "Settled";
             transaction.SettledAt = DateTime.UtcNow;
         }
-        else // QRIS or Bank Transfer (Midtrans Snap)
+        else
         {
             transaction.MidtransOrderId = invoiceNo;
             var midtransSnap = await _midtransService.CreateSnapTransactionAsync(transaction);
             transaction.MidtransSnapToken = midtransSnap.Token;
         }
 
-        // Deduct stock immediately upon checkout creation for all payment methods (prevents QRIS overselling)
+        // Deduct stock immediately to reserve inventory for both Cash and QRIS/Transfer
         foreach (var itemRequest in request.Items)
         {
             var product = products[itemRequest.ProductId];
@@ -177,6 +180,75 @@ public class POSService : IPOSService
             .FirstOrDefaultAsync(t => t.Id == id && t.WarungId == warungId);
 
         return transaction == null ? null : MapToTransactionDto(transaction);
+    }
+
+    public async Task<bool> ProcessPaymentWebhookAsync(MidtransWebhookPayload payload)
+    {
+        if (!_midtransService.VerifySignature(payload))
+        {
+            throw new UnauthorizedAccessException("Signature hash Midtrans tidak valid.");
+        }
+
+        var transaction = await _context.Transactions
+            .IgnoreQueryFilters()
+            .Include(t => t.Items)
+            .FirstOrDefaultAsync(t => t.InvoiceNo == payload.OrderId || t.MidtransOrderId == payload.OrderId);
+
+        if (transaction == null)
+        {
+            throw new KeyNotFoundException($"Transaksi dengan Order ID '{payload.OrderId}' tidak ditemukan.");
+        }
+
+        if (string.Equals(transaction.PaymentStatus, "Settled", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        var status = payload.TransactionStatus?.ToLowerInvariant();
+        var fraud = payload.FraudStatus?.ToLowerInvariant();
+
+        if (status == "settlement" || (status == "capture" && fraud == "accept"))
+        {
+            transaction.PaymentStatus = "Settled";
+            transaction.PaidAmount = transaction.TotalAmount;
+            transaction.SettledAt = DateTime.UtcNow;
+        }
+        else if (status == "expire" || status == "cancel" || status == "deny")
+        {
+            var isExpired = status == "expire";
+            transaction.PaymentStatus = isExpired ? "Expired" : "Failed";
+
+            // Restore reserved stock upon cancellation or expiration
+            foreach (var item in transaction.Items)
+            {
+                var product = await _context.Products
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(p => p.Id == item.ProductId);
+
+                if (product != null)
+                {
+                    product.StockQuantity += item.Quantity;
+
+                    var inventoryTx = new InventoryTransaction
+                    {
+                        Id = Guid.NewGuid(),
+                        WarungId = transaction.WarungId,
+                        ProductId = product.Id,
+                        Type = "Adjustment",
+                        QuantityChange = item.Quantity,
+                        StockAfter = product.StockQuantity,
+                        Notes = $"Restorasi stok pembatalan/expired #{transaction.InvoiceNo}",
+                        CreatedByUserId = transaction.UserId,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _context.InventoryTransactions.Add(inventoryTx);
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     private static TransactionDto MapToTransactionDto(Transaction t)

@@ -115,17 +115,13 @@ public class AuthService : IAuthService
         }
         else // Staff
         {
-            if (request.WarungId.HasValue)
-            {
-                warungId = request.WarungId.Value;
-            }
-            else if (_currentUserService.WarungId.HasValue)
+            if (_currentUserService.WarungId.HasValue)
             {
                 warungId = _currentUserService.WarungId.Value;
             }
             else
             {
-                throw new InvalidOperationException("WarungId tidak ditemukan untuk pendaftaran Staff.");
+                throw new UnauthorizedAccessException("Pendaftaran akun Staff hanya dapat dilakukan oleh Owner Warung yang terautentikasi.");
             }
         }
 

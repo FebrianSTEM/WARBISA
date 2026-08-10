@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Moq;
+using Warbisa.Application.Common.Interfaces;
 using Warbisa.Domain.Entities;
 using Warbisa.Infrastructure.Persistence;
 using Warbisa.Infrastructure.Services;
@@ -21,10 +23,14 @@ public class DashboardServiceTests
     public async Task GetAnalytics_ShouldCalculateGrossSalesAndNetRevenueCorrectly()
     {
         var db = GetInMemoryDbContext();
-        var dashboardService = new DashboardService(db);
-
         var warungId = Guid.NewGuid();
         var userId = Guid.NewGuid();
+
+        var currentUserServiceMock = new Mock<ICurrentUserService>();
+        currentUserServiceMock.Setup(u => u.WarungId).Returns(warungId);
+        currentUserServiceMock.Setup(u => u.UserId).Returns(userId);
+
+        var dashboardService = new DashboardService(db, currentUserServiceMock.Object);
         var prodId1 = Guid.NewGuid();
         var prodId2 = Guid.NewGuid();
 

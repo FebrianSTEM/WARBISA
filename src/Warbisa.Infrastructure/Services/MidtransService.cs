@@ -85,10 +85,15 @@ public class MidtransService : IMidtransService
         if (status == "settlement" || (status == "capture" && fraud == "accept"))
         {
             transaction.PaymentStatus = "Settled";
-            transaction.PaidAmount = transaction.TotalAmount; // BUG-03 fix
+            transaction.PaidAmount = transaction.TotalAmount;
             transaction.SettledAt = DateTime.UtcNow;
+        }
+        else if (status == "expire" || status == "cancel" || status == "deny")
+        {
+            var isExpired = status == "expire";
+            transaction.PaymentStatus = isExpired ? "Expired" : "Failed";
 
-            // Deduct stock upon successful settlement with clamping to 0 (BUG-02 fix)
+            // Restore reserved stock upon cancellation or expiration
             foreach (var item in transaction.Items)
             {
                 var product = await _context.Products
@@ -97,22 +102,17 @@ public class MidtransService : IMidtransService
 
                 if (product != null)
                 {
-                    var newStock = Math.Max(0, product.StockQuantity - item.Quantity);
-                    var notes = product.StockQuantity < item.Quantity
-                        ? $"Midtrans Webhook Settlement #{transaction.InvoiceNo} (Stok terpotong hingga 0)"
-                        : $"Midtrans Webhook Settlement #{transaction.InvoiceNo}";
-
-                    product.StockQuantity = newStock;
+                    product.StockQuantity += item.Quantity;
 
                     var inventoryTx = new InventoryTransaction
                     {
                         Id = Guid.NewGuid(),
                         WarungId = transaction.WarungId,
                         ProductId = product.Id,
-                        Type = "Sale",
-                        QuantityChange = -item.Quantity,
-                        StockAfter = newStock,
-                        Notes = notes,
+                        Type = "Adjustment",
+                        QuantityChange = item.Quantity,
+                        StockAfter = product.StockQuantity,
+                        Notes = $"Restorasi stok pembatalan/expired #{transaction.InvoiceNo}",
                         CreatedByUserId = transaction.UserId,
                         CreatedAt = DateTime.UtcNow
                     };
@@ -120,14 +120,6 @@ public class MidtransService : IMidtransService
                     _context.InventoryTransactions.Add(inventoryTx);
                 }
             }
-        }
-        else if (status == "expire")
-        {
-            transaction.PaymentStatus = "Expired";
-        }
-        else if (status == "cancel" || status == "deny")
-        {
-            transaction.PaymentStatus = "Failed";
         }
 
         await _context.SaveChangesAsync();

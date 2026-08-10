@@ -166,7 +166,7 @@ public class InventoryService : IInventoryService
         var warungId = GetCurrentWarungId();
 
         var skuExists = await _context.Products
-            .AnyAsync(p => p.Sku.ToLower() == request.Sku.Trim().ToLower());
+            .AnyAsync(p => p.WarungId == warungId && p.Sku.ToLower() == request.Sku.Trim().ToLower());
 
         if (skuExists)
         {
@@ -234,7 +234,7 @@ public class InventoryService : IInventoryService
         }
 
         var skuExists = await _context.Products
-            .AnyAsync(p => p.Id != id && p.Sku.ToLower() == request.Sku.Trim().ToLower());
+            .AnyAsync(p => p.WarungId == warungId && p.Id != id && p.Sku.ToLower() == request.Sku.Trim().ToLower());
 
         if (skuExists)
         {
