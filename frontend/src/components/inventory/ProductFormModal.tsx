@@ -182,18 +182,18 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Kategori Produk</label>
-            <input
-              type="text"
-              list="category-suggestions"
+            <select
               value={formData.categoryName}
               onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
               className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
-            />
-            <datalist id="category-suggestions">
+            >
+              {availableCategories.length === 0 && (
+                <option value="" disabled>Belum ada kategori</option>
+              )}
               {availableCategories.map((cat) => (
-                <option key={cat} value={cat} />
+                <option key={cat} value={cat}>{cat}</option>
               ))}
-            </datalist>
+            </select>
           </div>
 
           <div>
