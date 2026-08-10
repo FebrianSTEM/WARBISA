@@ -12,14 +12,17 @@ namespace Warbisa.API.Controllers;
 public class CategoriesController : ControllerBase
 {
     private readonly IInventoryService _inventoryService;
-    private readonly IValidator<CreateCategoryRequest> _validator;
+    private readonly IValidator<CreateCategoryRequest> _createValidator;
+    private readonly IValidator<UpdateCategoryRequest> _updateValidator;
 
     public CategoriesController(
         IInventoryService inventoryService,
-        IValidator<CreateCategoryRequest> validator)
+        IValidator<CreateCategoryRequest> createValidator,
+        IValidator<UpdateCategoryRequest> updateValidator)
     {
         _inventoryService = inventoryService;
-        _validator = validator;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
     }
 
     [HttpGet]
@@ -34,7 +37,7 @@ public class CategoriesController : ControllerBase
     [Authorize(Roles = "Owner")]
     public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest request)
     {
-        var valResult = await _validator.ValidateAsync(request);
+        var valResult = await _createValidator.ValidateAsync(request);
         if (!valResult.IsValid)
         {
             throw new ValidationException(valResult.Errors);
@@ -42,5 +45,27 @@ public class CategoriesController : ControllerBase
 
         var result = await _inventoryService.CreateCategoryAsync(request);
         return CreatedAtAction(nameof(GetCategories), new { id = result.Id }, result);
+    }
+
+    [HttpPut("{id}")]
+    [Authorize(Roles = "Owner")]
+    public async Task<IActionResult> UpdateCategory(Guid id, [FromBody] UpdateCategoryRequest request)
+    {
+        var valResult = await _updateValidator.ValidateAsync(request);
+        if (!valResult.IsValid)
+        {
+            throw new ValidationException(valResult.Errors);
+        }
+
+        var result = await _inventoryService.UpdateCategoryAsync(id, request);
+        return Ok(result);
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Owner")]
+    public async Task<IActionResult> DeleteCategory(Guid id)
+    {
+        await _inventoryService.DeleteCategoryAsync(id);
+        return NoContent();
     }
 }

@@ -114,4 +114,53 @@ public class InventoryServiceTests
         Assert.Single(lowStockItems);
         Assert.Equal("Barang A", lowStockItems[0].Name);
     }
+
+    [Fact]
+    public async Task UpdateCategory_ShouldUpdateCategoryName_WhenValid()
+    {
+        var (db, warungId, userMock) = GetSetup();
+        var inventoryService = new InventoryService(db, userMock.Object);
+
+        var created = await inventoryService.CreateCategoryAsync(new CreateCategoryRequest { Name = "Makanan" });
+        Assert.NotNull(created);
+
+        var updated = await inventoryService.UpdateCategoryAsync(created.Id, new UpdateCategoryRequest { Name = "Makanan & Minuman" });
+        Assert.Equal("Makanan & Minuman", updated.Name);
+
+        var categories = await inventoryService.GetCategoriesAsync();
+        Assert.Single(categories);
+        Assert.Equal("Makanan & Minuman", categories[0].Name);
+    }
+
+    [Fact]
+    public async Task DeleteCategory_ShouldRemoveCategoryAndSetProductCategoryIdToNull()
+    {
+        var (db, warungId, userMock) = GetSetup();
+        var inventoryService = new InventoryService(db, userMock.Object);
+
+        var category = await inventoryService.CreateCategoryAsync(new CreateCategoryRequest { Name = "Snack" });
+
+        var product = await inventoryService.CreateProductAsync(new CreateProductRequest
+        {
+            CategoryId = category.Id,
+            Sku = "SKU-SNACK-01",
+            Name = "Keripik Singkong",
+            Unit = "Pack",
+            CostPrice = 5000,
+            SellingPrice = 7500,
+            StockQuantity = 10,
+            MinStockThreshold = 2
+        });
+
+        Assert.Equal(category.Id, product.CategoryId);
+
+        await inventoryService.DeleteCategoryAsync(category.Id);
+
+        var categories = await inventoryService.GetCategoriesAsync();
+        Assert.Empty(categories);
+
+        var updatedProduct = await inventoryService.GetProductBySkuOrBarcodeAsync("SKU-SNACK-01");
+        Assert.NotNull(updatedProduct);
+        Assert.Null(updatedProduct!.CategoryId);
+    }
 }

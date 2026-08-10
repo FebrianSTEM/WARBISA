@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { inventoryApi } from '../../api/inventoryApi';
 import type { Product, CreateProductRequest } from '../../api/inventoryApi';
 import { Modal } from '../common/Modal';
 
@@ -21,6 +22,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   initialData,
   categories,
 }) => {
+  const [availableCategories, setAvailableCategories] = useState<string[]>(categories);
   const [formData, setFormData] = useState<ProductFormState>({
     sku: '',
     barcode: '',
@@ -37,31 +39,46 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (initialData) {
-      setFormData({
-        categoryId: initialData.categoryId,
-        sku: initialData.sku || `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
-        barcode: initialData.barcode || '',
-        name: initialData.name || '',
-        categoryName: initialData.categoryName || categories[0] || 'Sembako',
-        unit: initialData.unit || 'Pcs',
-        costPrice: initialData.costPrice || 0,
-        sellingPrice: initialData.sellingPrice || 0,
-        stockQuantity: initialData.stockQuantity !== undefined ? initialData.stockQuantity : 10,
-        minStockThreshold: initialData.minStockThreshold !== undefined ? initialData.minStockThreshold : 5,
-      });
-    } else {
-      setFormData({
-        sku: `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
-        barcode: `899${Math.floor(1000000000 + Math.random() * 9000000000)}`,
-        name: '',
-        categoryName: categories[0] || 'Sembako',
-        unit: 'Pcs',
-        costPrice: 0,
-        sellingPrice: 0,
-        stockQuantity: 10,
-        minStockThreshold: 5,
-      });
+    const loadCategories = async () => {
+      let activeCats = categories;
+      try {
+        const fetched = await inventoryApi.getCategories();
+        if (fetched && fetched.length > 0) {
+          activeCats = fetched.map((c) => c.name);
+        }
+      } catch {}
+      setAvailableCategories(activeCats);
+
+      if (initialData) {
+        setFormData({
+          categoryId: initialData.categoryId,
+          sku: initialData.sku || `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
+          barcode: initialData.barcode || '',
+          name: initialData.name || '',
+          categoryName: initialData.categoryName || activeCats[0] || 'Sembako',
+          unit: initialData.unit || 'Pcs',
+          costPrice: initialData.costPrice || 0,
+          sellingPrice: initialData.sellingPrice || 0,
+          stockQuantity: initialData.stockQuantity !== undefined ? initialData.stockQuantity : 10,
+          minStockThreshold: initialData.minStockThreshold !== undefined ? initialData.minStockThreshold : 5,
+        });
+      } else {
+        setFormData({
+          sku: `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
+          barcode: `899${Math.floor(1000000000 + Math.random() * 9000000000)}`,
+          name: '',
+          categoryName: activeCats[0] || 'Sembako',
+          unit: 'Pcs',
+          costPrice: 0,
+          sellingPrice: 0,
+          stockQuantity: 10,
+          minStockThreshold: 5,
+        });
+      }
+    };
+
+    if (isOpen) {
+      loadCategories();
     }
     setError(null);
   }, [initialData, isOpen, categories]);
@@ -173,7 +190,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
               className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none"
             />
             <datalist id="category-suggestions">
-              {categories.map((cat) => (
+              {availableCategories.map((cat) => (
                 <option key={cat} value={cat} />
               ))}
             </datalist>

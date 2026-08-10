@@ -8,7 +8,8 @@ import { CameraScannerModal } from '../components/pos/CameraScannerModal';
 import { Toast } from '../components/common/Toast';
 import type { ToastMessage } from '../components/common/Toast';
 import { ContinuousRestockModal } from '../components/inventory/ContinuousRestockModal';
-import { Plus, Search, Filter, Package, Camera, PackagePlus } from 'lucide-react';
+import { CategoryManagementModal } from '../components/inventory/CategoryManagementModal';
+import { Plus, Search, Filter, Package, Camera, PackagePlus, Tag } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 
 // Initial Mock Data if offline
@@ -30,6 +31,7 @@ export const InventoryPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
@@ -250,16 +252,27 @@ export const InventoryPage: React.FC = () => {
           </button>
 
           {isOwner && (
-            <button
-              onClick={() => {
-                setEditingProduct(null);
-                setIsFormOpen(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm rounded-xl transition-colors cursor-pointer"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Produk Baru</span>
-            </button>
+            <>
+              <button
+                onClick={() => setIsCategoryModalOpen(true)}
+                className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm rounded-xl transition-colors cursor-pointer"
+                title="Kelola Daftar Kategori Produk"
+              >
+                <Tag className="w-4 h-4 text-emerald-600" />
+                <span>Kelola Kategori</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setEditingProduct(null);
+                  setIsFormOpen(true);
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm rounded-xl transition-colors cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Tambah Produk Baru</span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -353,6 +366,21 @@ export const InventoryPage: React.FC = () => {
             minStockThreshold: 5,
           });
           setIsFormOpen(true);
+        }}
+      />
+
+      {/* Category Management Modal */}
+      <CategoryManagementModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onCategoriesChanged={async () => {
+          try {
+            const cats = await inventoryApi.getCategories();
+            if (cats && cats.length > 0) {
+              setCategories(cats.map((c) => c.name));
+            }
+          } catch {}
+          fetchProducts();
         }}
       />
 

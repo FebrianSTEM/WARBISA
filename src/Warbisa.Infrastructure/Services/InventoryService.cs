@@ -63,6 +63,61 @@ public class InventoryService : IInventoryService
         };
     }
 
+    public async Task<CategoryDto> UpdateCategoryAsync(Guid id, UpdateCategoryRequest request)
+    {
+        var warungId = GetCurrentWarungId();
+        var category = await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == id && c.WarungId == warungId);
+
+        if (category == null)
+        {
+            throw new KeyNotFoundException("Kategori tidak ditemukan.");
+        }
+
+        var exists = await _context.Categories
+            .AnyAsync(c => c.Id != id && c.Name.ToLower() == request.Name.Trim().ToLower());
+
+        if (exists)
+        {
+            throw new InvalidOperationException($"Kategori '{request.Name}' sudah ada.");
+        }
+
+        category.Name = request.Name.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return new CategoryDto
+        {
+            Id = category.Id,
+            WarungId = category.WarungId,
+            Name = category.Name
+        };
+    }
+
+    public async Task DeleteCategoryAsync(Guid id)
+    {
+        var warungId = GetCurrentWarungId();
+        var category = await _context.Categories
+            .FirstOrDefaultAsync(c => c.Id == id && c.WarungId == warungId);
+
+        if (category == null)
+        {
+            throw new KeyNotFoundException("Kategori tidak ditemukan.");
+        }
+
+        var products = await _context.Products
+            .Where(p => p.CategoryId == id)
+            .ToListAsync();
+
+        foreach (var product in products)
+        {
+            product.CategoryId = null;
+        }
+
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<List<ProductDto>> GetProductsAsync(string? search = null, Guid? categoryId = null)
     {
         var query = _context.Products.Include(p => p.Category).AsQueryable();

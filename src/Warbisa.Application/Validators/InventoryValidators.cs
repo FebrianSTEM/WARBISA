@@ -13,6 +13,20 @@ public class CreateCategoryRequestValidator : AbstractValidator<CreateCategoryRe
     }
 }
 
+public class UpdateCategoryValidator : AbstractValidator<UpdateCategoryRequest>
+{
+    public UpdateCategoryValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Nama kategori wajib diisi.")
+            .MaximumLength(100).WithMessage("Nama kategori maksimal 100 karakter.");
+    }
+}
+
+public class UpdateCategoryRequestValidator : UpdateCategoryValidator
+{
+}
+
 public class CreateProductRequestValidator : AbstractValidator<CreateProductRequest>
 {
     private static readonly string[] ValidUnits = { "Pcs", "Kg", "Pack", "Botol" };

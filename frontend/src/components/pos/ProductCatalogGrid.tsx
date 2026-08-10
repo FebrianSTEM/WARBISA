@@ -82,13 +82,6 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
 
       const qrConfig = {
         fps: 15,
-        qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          return {
-            width: Math.max(200, Math.floor(minEdge * 0.8)),
-            height: Math.max(120, Math.floor(minEdge * 0.5)),
-          };
-        },
         formatsToSupport: [
           Html5QrcodeSupportedFormats.EAN_13,
           Html5QrcodeSupportedFormats.EAN_8,
@@ -207,7 +200,7 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div id="inline-reader" className="w-full max-w-md h-[180px] rounded-xl overflow-hidden bg-black"></div>
+          <div id="inline-reader" className="w-full max-w-md aspect-video rounded-xl overflow-hidden bg-black"></div>
         </div>
       )}
 

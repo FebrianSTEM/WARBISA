@@ -98,4 +98,16 @@ public class ValidatorsTests
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "Quantity");
     }
+
+    [Fact]
+    public void UpdateCategoryValidator_ShouldFail_WhenNameEmpty()
+    {
+        var validator = new UpdateCategoryValidator();
+        var model = new UpdateCategoryRequest { Name = "" };
+
+        var result = validator.Validate(model);
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "Name");
+    }
 }

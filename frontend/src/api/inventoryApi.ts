@@ -98,5 +98,19 @@ export const inventoryApi = {
     const response = await axiosClient.get<CategoryDTO[]>('/categories');
     return response.data;
   },
+
+  createCategory: async (name: string): Promise<CategoryDTO> => {
+    const response = await axiosClient.post<CategoryDTO>('/categories', { name });
+    return response.data;
+  },
+
+  updateCategory: async (id: string, name: string): Promise<CategoryDTO> => {
+    const response = await axiosClient.put<CategoryDTO>(`/categories/${id}`, { name });
+    return response.data;
+  },
+
+  deleteCategory: async (id: string): Promise<void> => {
+    await axiosClient.delete(`/categories/${id}`);
+  },
 };
 
