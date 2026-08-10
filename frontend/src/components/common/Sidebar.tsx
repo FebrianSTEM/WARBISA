@@ -41,16 +41,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
   const activeMenus = menus && menus.length > 0 ? menus : defaultMenus;
 
-  if (!isOpen) return null;
-
   return (
-    <aside className="fixed md:static inset-y-0 left-0 z-40 w-64 bg-slate-50/70 backdrop-blur-md border-r border-slate-200/50 min-h-[calc(100vh-65px)] p-4 flex flex-col justify-between shrink-0 shadow-lg md:shadow-none transition-all duration-300">
-      <div className="space-y-2">
+    <aside
+      className={`fixed md:static inset-y-0 left-0 z-40 bg-slate-50/70 backdrop-blur-md border-r border-slate-200/50 min-h-[calc(100vh-65px)] flex flex-col justify-between shrink-0 shadow-lg md:shadow-none transition-all duration-300 ease-in-out ${
+        isOpen
+          ? 'w-64 p-4 opacity-100 translate-x-0'
+          : 'w-0 p-0 opacity-0 -translate-x-full md:translate-x-0 border-none overflow-hidden pointer-events-none'
+      }`}
+    >
+      <div className={`space-y-2 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
         <div className="px-3 py-1 flex items-center justify-between">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">
             Menu Utama
           </p>
-          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60 whitespace-nowrap">
             {user?.roleName || 'Kasir'}
           </span>
         </div>
@@ -69,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                   }
                 }}
                 className={({ isActive }) =>
-                  `group relative flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-200 ${
+                  `group relative flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${
                     isActive
                       ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/25 translate-x-1'
                       : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
@@ -88,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                     </div>
 
                     {isActive && (
-                      <ChevronRight className="w-4 h-4 text-emerald-100/90 animate-pulse" />
+                      <ChevronRight className="w-4 h-4 text-emerald-100/90 animate-pulse shrink-0" />
                     )}
                   </>
                 )}
@@ -98,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
         </nav>
       </div>
 
-      <div className="p-3.5 bg-white/80 backdrop-blur-xs rounded-2xl border border-slate-200/60 shadow-2xs space-y-1">
+      <div className={`p-3.5 bg-white/80 backdrop-blur-xs rounded-2xl border border-slate-200/60 shadow-2xs space-y-1 transition-opacity duration-200 whitespace-nowrap ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
         <div className="flex items-center justify-between">
           <p className="font-extrabold text-slate-800 text-xs">WASERBI POS</p>
           <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">v1.2</span>
