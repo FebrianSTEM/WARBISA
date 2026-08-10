@@ -33,8 +33,8 @@ export const exportDashboardToExcel = (metrics: DashboardAnalyticsResponse, peri
   csvContent += `\n`;
 
   // Top 5 Categories Section
-  csvContent += `TOP KATEGORI TERLARIS\n`;
-  csvContent += `No,Kategori,Unit Terjual,Total Revenue,Persentase\n`;
+  csvContent += `TOP 5 KATEGORI TERLARIS\n`;
+  csvContent += `No,Nama Kategori,Unit Terjual,Total Revenue,Persentase\n`;
   (metrics.topSellingCategories || []).forEach((cat, idx) => {
     csvContent += `${idx + 1},"${cat.categoryName}",${cat.totalQuantitySold},"${formatCurrency(cat.totalRevenue)}",${cat.percentage}%\n`;
   });
@@ -136,6 +136,30 @@ export const exportDashboardToPDF = (metrics: DashboardAnalyticsResponse, period
               <td class="text-center">${pm.count}</td>
               <td class="text-right"><strong>${formatCurrency(pm.totalAmount)}</strong></td>
               <td class="text-right">${pm.percentage}%</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div class="section-title">Top 5 Kategori Paling Laris</div>
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Nama Kategori</th>
+            <th class="text-center">Unit Terjual</th>
+            <th class="text-right">Total Revenue</th>
+            <th class="text-right">Persentase</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${(metrics.topSellingCategories || []).map((cat, idx) => `
+            <tr>
+              <td>${idx + 1}</td>
+              <td><strong>${cat.categoryName}</strong></td>
+              <td class="text-center">${cat.totalQuantitySold} Unit</td>
+              <td class="text-right"><strong>${formatCurrency(cat.totalRevenue)}</strong></td>
+              <td class="text-right">${cat.percentage}%</td>
             </tr>
           `).join('')}
         </tbody>
