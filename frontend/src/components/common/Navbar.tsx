@@ -12,29 +12,29 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
   const { user, logout } = useAuthStore();
 
   return (
-    <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xs">
+    <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xs">
       <div className="flex items-center gap-3">
         {onToggleSidebar && (
           <button
             onClick={onToggleSidebar}
-            className="p-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-2xl transition-all border border-slate-200 hover:border-emerald-200"
+            className="p-2 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all border border-slate-200 hover:border-emerald-200"
             title={isSidebarOpen ? 'Sembunyikan Menu Sidebar' : 'Tampilkan Menu Sidebar'}
           >
             {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
           </button>
         )}
 
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-700 font-bold shadow-xs overflow-hidden">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden border border-emerald-500">
             {user?.warungLogoUrl ? (
               <img src={user.warungLogoUrl} alt="Logo Toko" className="w-full h-full object-cover" />
             ) : (
-              <Store className="w-5 h-5 text-emerald-600" />
+              <Store className="w-5 h-5" />
             )}
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-extrabold text-slate-900 leading-tight tracking-tight">
-              {user?.warungName || 'WASERBI'}
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight uppercase tracking-tight">
+              {user?.warungName || 'WARBISA'}
             </h1>
             <p className="text-[11px] sm:text-xs text-slate-500 font-medium hidden xs:block">
               {user?.warungName ? 'Sistem Kasir & Inventaris Toko' : 'Warung Serba Bisa — POS & Inventaris'}
@@ -45,13 +45,13 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
 
       <div className="flex items-center gap-4">
         {user && (
-          <div className="flex items-center gap-3 border-r border-slate-200/80 pr-4">
-            <div className="w-9 h-9 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
-              <User className="w-4.5 h-4.5 text-emerald-600" />
+          <div className="flex items-center gap-3 border-r border-slate-200 pr-4">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
+              <User className="w-4 h-4" />
             </div>
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-800 leading-none">{user.fullName || user.username}</p>
-              <div className="mt-1">
+              <p className="text-sm font-semibold text-slate-800 leading-none">{user.fullName || user.username}</p>
+              <div className="mt-0.5">
                 <Badge variant={user.roleName === 'Owner' ? 'success' : 'info'}>
                   {user.roleName}
                 </Badge>
@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
 
         <button
           onClick={logout}
-          className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-slate-600 hover:text-rose-600 hover:bg-rose-50/80 rounded-2xl transition-all border border-slate-200/80 hover:border-rose-200"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-slate-200 hover:border-rose-200"
           title="Keluar dari Sistem"
         >
           <LogOut className="w-4 h-4" />
