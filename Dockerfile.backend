@@ -1,0 +1,31 @@
+# Stage 1: Build .NET 9 Application
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+WORKDIR /app
+
+# Copy solution and project files for layer caching
+COPY Warbisa.sln ./
+COPY src/Warbisa.Domain/Warbisa.Domain.csproj src/Warbisa.Domain/
+COPY src/Warbisa.Application/Warbisa.Application.csproj src/Warbisa.Application/
+COPY src/Warbisa.Infrastructure/Warbisa.Infrastructure.csproj src/Warbisa.Infrastructure/
+COPY src/Warbisa.API/Warbisa.API.csproj src/Warbisa.API/
+COPY tests/Warbisa.Tests/Warbisa.Tests.csproj tests/Warbisa.Tests/
+
+RUN dotnet restore Warbisa.sln
+
+# Copy remaining source code and publish
+COPY src/ src/
+COPY tests/ tests/
+
+RUN dotnet publish src/Warbisa.API/Warbisa.API.csproj -c Release -o /app/publish /p:UseAppHost=false
+
+# Stage 2: Production Runtime Image (Lightweight Alpine)
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS final
+WORKDIR /app
+EXPOSE 8080
+
+ENV ASPNETCORE_URLS=http://+:8080
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "Warbisa.API.dll"]

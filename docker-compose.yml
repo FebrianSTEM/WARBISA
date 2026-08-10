@@ -1,0 +1,58 @@
+services:
+  # 1. PostgreSQL Database (Lightweight Alpine ~25MB RAM)
+  postgres:
+    image: postgres:16-alpine
+    container_name: warbisa_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-warbisa_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_production_secret_2026}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-warbisa_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. .NET 9 Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: warbisa_backend
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB:-warbisa_db};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres_production_secret_2026}
+      - JwtSettings__Secret=${JWT_SECRET:-WARBISA_PROD_SUPER_SECRET_KEY_JWT_2026_MIN_32_BYTES}
+      - AllowedOrigins__0=http://localhost
+      - AllowedOrigins__1=http://localhost:80
+      - AllowedOrigins__2=https://202-10-34-172.sslip.io
+      - AllowedOrigins__3=http://202-10-34-172.sslip.io
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # 3. React 19 Frontend (Nginx Alpine Web Server)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: warbisa_frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

@@ -1,0 +1,52 @@
+# Markdown files (Do not push .md files)
+*.md
+**/*.md
+
+# Sensitive files & environment configurations
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.pfx
+appsettings.Development.json
+appsettings.Secrets.json
+appsettings*.local.json
+secrets.json
+
+# C# / .NET build outputs & Visual Studio
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+*.userosv
+*.suo
+*.userprefs
+
+# Node / Frontend dependencies & build outputs
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+dist-ssr/
+build/
+.output/
+
+# Logs & Temporary files
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Tooling / Analysis outputs
+graphify-out/
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
