@@ -69,12 +69,7 @@
 #reader canvas,
 #reader img[alt="Scanner guide"],
 #reader img[src*="data:image"],
-#reader__scan_region img,
-#inline-reader #qr-shaded-region,
-#inline-reader canvas,
-#inline-reader img[alt="Scanner guide"],
-#inline-reader img[src*="data:image"],
-#inline-reader__scan_region img {
+#reader__scan_region img {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;
