@@ -7,10 +7,12 @@ namespace Warbisa.Infrastructure.Services;
 public class DashboardService : IDashboardService
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUserService;
 
-    public DashboardService(IApplicationDbContext context)
+    public DashboardService(IApplicationDbContext context, ICurrentUserService currentUserService)
     {
         _context = context;
+        _currentUserService = currentUserService;
     }
 
     public async Task<DashboardAnalyticsResponse> GetAnalyticsAsync(string frequency)
@@ -35,10 +37,12 @@ public class DashboardService : IDashboardService
                 break;
         }
 
+        var warungId = _currentUserService.WarungId ?? throw new UnauthorizedAccessException("WarungId tidak ditemukan.");
+
         var settledQuery = _context.Transactions
             .Include(t => t.Items)
                 .ThenInclude(i => i.Product)
-            .Where(t => t.PaymentStatus == "Settled" && t.SettledAt.HasValue && t.SettledAt.Value >= startDate);
+            .Where(t => t.WarungId == warungId && t.PaymentStatus == "Settled" && t.SettledAt.HasValue && t.SettledAt.Value >= startDate);
 
         var transactions = await settledQuery.ToListAsync();
 
@@ -82,7 +86,7 @@ public class DashboardService : IDashboardService
 
         // Low stock count
         var lowStockCount = await _context.Products
-            .CountAsync(p => p.IsActive && p.StockQuantity <= p.MinStockThreshold);
+            .CountAsync(p => p.WarungId == warungId && p.IsActive && p.StockQuantity <= p.MinStockThreshold);
 
         return new DashboardAnalyticsResponse
         {

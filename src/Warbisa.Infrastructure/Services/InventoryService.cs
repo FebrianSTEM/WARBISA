@@ -23,7 +23,9 @@ public class InventoryService : IInventoryService
 
     public async Task<List<CategoryDto>> GetCategoriesAsync()
     {
+        var warungId = GetCurrentWarungId();
         return await _context.Categories
+            .Where(c => c.WarungId == warungId)
             .OrderBy(c => c.Name)
             .Select(c => new CategoryDto
             {
@@ -38,7 +40,7 @@ public class InventoryService : IInventoryService
     {
         var warungId = GetCurrentWarungId();
         var exists = await _context.Categories
-            .AnyAsync(c => c.Name.ToLower() == request.Name.Trim().ToLower());
+            .AnyAsync(c => c.WarungId == warungId && c.Name.ToLower() == request.Name.Trim().ToLower());
 
         if (exists)
         {
@@ -75,7 +77,7 @@ public class InventoryService : IInventoryService
         }
 
         var exists = await _context.Categories
-            .AnyAsync(c => c.Id != id && c.Name.ToLower() == request.Name.Trim().ToLower());
+            .AnyAsync(c => c.WarungId == warungId && c.Id != id && c.Name.ToLower() == request.Name.Trim().ToLower());
 
         if (exists)
         {
@@ -120,7 +122,11 @@ public class InventoryService : IInventoryService
 
     public async Task<List<ProductDto>> GetProductsAsync(string? search = null, Guid? categoryId = null)
     {
-        var query = _context.Products.Include(p => p.Category).AsQueryable();
+        var warungId = GetCurrentWarungId();
+        var query = _context.Products
+            .Include(p => p.Category)
+            .Where(p => p.WarungId == warungId)
+            .AsQueryable();
 
         if (categoryId.HasValue)
         {
@@ -146,10 +152,11 @@ public class InventoryService : IInventoryService
     {
         if (string.IsNullOrWhiteSpace(sku)) return null;
 
+        var warungId = GetCurrentWarungId();
         var term = sku.Trim().ToLower();
         var product = await _context.Products
             .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Sku.ToLower() == term || (p.Barcode != null && p.Barcode.ToLower() == term));
+            .FirstOrDefaultAsync(p => p.WarungId == warungId && (p.Sku.ToLower() == term || (p.Barcode != null && p.Barcode.ToLower() == term)));
 
         return product == null ? null : MapToProductDto(product);
     }
@@ -216,9 +223,10 @@ public class InventoryService : IInventoryService
 
     public async Task<ProductDto> UpdateProductAsync(Guid id, UpdateProductRequest request)
     {
+        var warungId = GetCurrentWarungId();
         var product = await _context.Products
             .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.Id == id && p.WarungId == warungId);
 
         if (product == null)
         {
@@ -252,7 +260,7 @@ public class InventoryService : IInventoryService
         var warungId = GetCurrentWarungId();
         var product = await _context.Products
             .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.Id == id && p.WarungId == warungId);
 
         if (product == null)
         {
@@ -285,7 +293,7 @@ public class InventoryService : IInventoryService
         var warungId = GetCurrentWarungId();
         var product = await _context.Products
             .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.Id == id && p.WarungId == warungId);
 
         if (product == null)
         {
@@ -321,9 +329,10 @@ public class InventoryService : IInventoryService
 
     public async Task<List<ProductDto>> GetLowStockProductsAsync()
     {
+        var warungId = GetCurrentWarungId();
         return await _context.Products
             .Include(p => p.Category)
-            .Where(p => p.IsActive && p.StockQuantity <= p.MinStockThreshold)
+            .Where(p => p.WarungId == warungId && p.IsActive && p.StockQuantity <= p.MinStockThreshold)
             .OrderBy(p => p.StockQuantity)
             .Select(p => MapToProductDto(p))
             .ToListAsync();
@@ -331,9 +340,11 @@ public class InventoryService : IInventoryService
 
     public async Task<List<InventoryTransactionDto>> GetInventoryTransactionsAsync()
     {
+        var warungId = GetCurrentWarungId();
         return await _context.InventoryTransactions
             .Include(it => it.Product)
             .Include(it => it.CreatedByUser)
+            .Where(it => it.WarungId == warungId)
             .OrderByDescending(it => it.CreatedAt)
             .Select(it => new InventoryTransactionDto
             {

@@ -156,10 +156,12 @@ public class POSService : IPOSService
 
     public async Task<List<TransactionDto>> GetTransactionsAsync()
     {
+        var warungId = GetCurrentWarungId();
         return await _context.Transactions
             .Include(t => t.User)
             .Include(t => t.Items)
                 .ThenInclude(i => i.Product)
+            .Where(t => t.WarungId == warungId)
             .OrderByDescending(t => t.CreatedAt)
             .Select(t => MapToTransactionDto(t))
             .ToListAsync();
@@ -167,11 +169,12 @@ public class POSService : IPOSService
 
     public async Task<TransactionDto?> GetTransactionByIdAsync(Guid id)
     {
+        var warungId = GetCurrentWarungId();
         var transaction = await _context.Transactions
             .Include(t => t.User)
             .Include(t => t.Items)
                 .ThenInclude(i => i.Product)
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .FirstOrDefaultAsync(t => t.Id == id && t.WarungId == warungId);
 
         return transaction == null ? null : MapToTransactionDto(transaction);
     }

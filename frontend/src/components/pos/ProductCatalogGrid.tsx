@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Product } from '../../api/inventoryApi';
-import { Search, Camera, Plus, PackageX } from 'lucide-react';
+import { Search, Camera, Plus, PackageX, Video, RefreshCw, AlertCircle, X } from 'lucide-react';
 import { Badge } from '../common/Badge';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface ProductCatalogGridProps {
   products: Product[];
@@ -24,9 +25,20 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
   searchQuery,
   onSearchChange,
   onAddToCart,
+  onScanSuccess,
   onOpenScannerModal,
   isLoading,
 }) => {
+  const [isInlineCameraOpen, setIsInlineCameraOpen] = useState(false);
+  const [isStartingCamera, setIsStartingCamera] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [showGuideline, setShowGuideline] = useState(false);
+  const [cameraDevices, setCameraDevices] = useState<{ id: string; label: string }[]>([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string>('');
+
+  const inlineQrCodeRef = useRef<Html5Qrcode | null>(null);
+  const lastScanTimeRef = useRef<{ code: string; time: number }>({ code: '', time: 0 });
+
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -34,6 +46,116 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
       maximumFractionDigits: 0,
     }).format(val);
   };
+
+  const playBeep = () => {
+    try {
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.15);
+    } catch {}
+  };
+
+  const stopInlineCamera = async () => {
+    if (inlineQrCodeRef.current) {
+      try {
+        if (inlineQrCodeRef.current.isScanning) {
+          await inlineQrCodeRef.current.stop();
+        }
+        inlineQrCodeRef.current.clear();
+      } catch {}
+      inlineQrCodeRef.current = null;
+    }
+  };
+
+  const startInlineCamera = async (targetCameraId?: string) => {
+    await stopInlineCamera();
+    setScanError(null);
+    setIsStartingCamera(true);
+    try {
+      const readerElem = document.getElementById('inline-reader');
+      if (!readerElem) { setIsStartingCamera(false); return; }
+
+      const html5QrCode = new Html5Qrcode('inline-reader');
+      inlineQrCodeRef.current = html5QrCode;
+
+      const qrConfig = {
+        fps: 15,
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.UPC_A,
+          Html5QrcodeSupportedFormats.UPC_E,
+          Html5QrcodeSupportedFormats.QR_CODE,
+        ],
+      };
+
+      const handleScan = (decodedText: string) => {
+        const now = Date.now();
+        if (lastScanTimeRef.current.code === decodedText && now - lastScanTimeRef.current.time < 1500) return;
+        lastScanTimeRef.current = { code: decodedText, time: now };
+        playBeep();
+        onScanSuccess(decodedText);
+      };
+
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          const formatted = devices.map((d, i) => ({ id: d.id, label: d.label || `Kamera ${i + 1}` }));
+          setCameraDevices(formatted);
+
+          let chosenId = targetCameraId || selectedCameraId;
+          if (!chosenId || !devices.some((d) => d.id === chosenId)) {
+            const backCam = devices.find((d) =>
+              d.label.toLowerCase().includes('back') ||
+              d.label.toLowerCase().includes('rear') ||
+              d.label.toLowerCase().includes('environment')
+            );
+            chosenId = backCam ? backCam.id : devices[devices.length - 1].id;
+          }
+          setSelectedCameraId(chosenId);
+          await html5QrCode.start(chosenId, qrConfig, handleScan, () => {});
+          setIsStartingCamera(false);
+          return;
+        }
+      } catch {}
+
+      try {
+        await html5QrCode.start({ facingMode: 'environment' }, qrConfig, handleScan, () => {});
+      } catch {
+        await html5QrCode.start({ facingMode: 'user' }, qrConfig, handleScan, () => {});
+      }
+      setIsStartingCamera(false);
+    } catch (e: any) {
+      setScanError('Tidak dapat mengakses kamera. Pastikan izin kamera telah diberikan.');
+      setIsStartingCamera(false);
+    }
+  };
+
+  const handleCameraChange = async (newId: string) => {
+    setSelectedCameraId(newId);
+    await startInlineCamera(newId);
+  };
+
+  useEffect(() => {
+    if (isInlineCameraOpen) {
+      const timer = setTimeout(() => startInlineCamera(), 200);
+      return () => { clearTimeout(timer); stopInlineCamera(); };
+    } else {
+      stopInlineCamera();
+      setScanError(null);
+      setCameraDevices([]);
+    }
+  }, [isInlineCameraOpen]);
 
   return (
     <div className="flex flex-col h-full space-y-4">
@@ -50,16 +172,117 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
           />
         </div>
 
-        {/* Unified Scan Barcode Button (Matches Inventory Management Page Design) */}
+        {/* Toggle Inline Camera Button */}
+        <button
+          onClick={() => setIsInlineCameraOpen(!isInlineCameraOpen)}
+          className={`flex items-center gap-2 px-3.5 py-2.5 font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0 cursor-pointer border ${
+            isInlineCameraOpen
+              ? 'bg-rose-50 border-rose-300 text-rose-700 hover:bg-rose-100'
+              : 'bg-slate-900 border-slate-900 text-white hover:bg-slate-800'
+          }`}
+          title="Tampilkan / Sembunyikan Scanner Kamera Langsung"
+        >
+          {isInlineCameraOpen ? <X className="w-4 h-4" /> : <Video className="w-4 h-4 text-emerald-400" />}
+          <span>{isInlineCameraOpen ? 'Tutup Kamera' : 'Kamera Live'}</span>
+        </button>
+
+        {/* Modal Scanner Fallback */}
         <button
           onClick={onOpenScannerModal}
-          className="flex items-center gap-2 px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0 cursor-pointer"
-          title="Scan Barcode Produk untuk Cari / Masukkan ke Keranjang"
+          className="flex items-center gap-1.5 px-3 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl shadow-xs transition-colors shrink-0 cursor-pointer border border-slate-200"
+          title="Buka Modal Scanner"
         >
-          <Camera className="w-4 h-4 text-emerald-400" />
-          <span>Scan Barcode</span>
+          <Camera className="w-4 h-4 text-emerald-600" />
         </button>
       </div>
+
+      {/* Inline Camera Panel — matches CameraScannerModal layout */}
+      {isInlineCameraOpen && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden shrink-0">
+          {/* Camera Selector */}
+          {cameraDevices.length > 0 && (
+            <div className="flex items-center gap-2 bg-slate-50 px-3 py-2 border-b border-slate-200 text-xs">
+              <Video className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+              <select
+                value={selectedCameraId}
+                onChange={(e) => handleCameraChange(e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded-lg px-2 py-1 text-xs font-semibold text-slate-800 focus:outline-none cursor-pointer"
+              >
+                {cameraDevices.map((cam, idx) => (
+                  <option key={cam.id} value={cam.id}>
+                    {cam.label || `Kamera ${idx + 1}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Control Bar */}
+          <div className="flex items-center justify-between text-xs text-slate-600 bg-emerald-50 px-3 py-1.5 border-b border-emerald-200">
+            <span className="font-medium text-[11px]">Scan barang tanpa henti (kamera bersih full screen).</span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowGuideline(!showGuideline)}
+                className={`font-bold transition-colors text-[11px] px-2 py-0.5 rounded cursor-pointer ${
+                  showGuideline
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                }`}
+              >
+                {showGuideline ? 'Sembunyikan Frame' : 'Frame Bantuan'}
+              </button>
+              <button
+                type="button"
+                onClick={() => startInlineCamera(selectedCameraId)}
+                className="text-emerald-700 font-bold hover:text-emerald-900 flex items-center gap-1 text-[11px] cursor-pointer"
+              >
+                <RefreshCw className="w-3 h-3" />
+                <span>Refresh</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Camera View */}
+          {scanError ? (
+            <div className="p-4 bg-rose-50 text-rose-700 flex flex-col items-center gap-2 text-xs text-center">
+              <AlertCircle className="w-5 h-5 text-rose-600" />
+              <span>{scanError}</span>
+              <button
+                type="button"
+                onClick={() => startInlineCamera(selectedCameraId)}
+                className="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs"
+              >
+                Coba Ulang
+              </button>
+            </div>
+          ) : (
+            <div className="w-full relative bg-slate-900 min-h-[220px] flex items-center justify-center">
+              {isStartingCamera && (
+                <div className="absolute inset-0 z-10 bg-slate-900/80 flex flex-col items-center justify-center text-white text-xs font-bold gap-2">
+                  <RefreshCw className="w-5 h-5 animate-spin text-emerald-400" />
+                  <span>Menghubungkan Kamera...</span>
+                </div>
+              )}
+              {showGuideline && (
+                <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
+                  <div className="w-52 h-32 border border-emerald-400/30 rounded-2xl relative flex items-center justify-center">
+                    <div className="absolute -top-1 -left-1 w-4 h-4 border-t-3 border-l-3 border-emerald-400 rounded-tl-lg"></div>
+                    <div className="absolute -top-1 -right-1 w-4 h-4 border-t-3 border-r-3 border-emerald-400 rounded-tr-lg"></div>
+                    <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-3 border-l-3 border-emerald-400 rounded-bl-lg"></div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-3 border-r-3 border-emerald-400 rounded-br-lg"></div>
+                    <div className="w-full border-t border-dashed border-emerald-400/40"></div>
+                    <span className="absolute -bottom-6 text-[10px] font-bold text-emerald-300 bg-slate-900/80 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      Arahkan Barcode ke Sini
+                    </span>
+                  </div>
+                </div>
+              )}
+              <div id="inline-reader" className="w-full h-full min-h-[220px]"></div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Category Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar shrink-0">

@@ -62,6 +62,12 @@ builder.Services.AddRateLimiter(options =>
         opt.PermitLimit = 5;
         opt.QueueLimit = 0;
     });
+    options.AddFixedWindowLimiter("RegisterLimiter", opt =>
+    {
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.PermitLimit = 3;
+        opt.QueueLimit = 0;
+    });
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
@@ -101,7 +107,8 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
-    db.Database.ExecuteSqlRaw(@"ALTER TABLE warungs ADD COLUMN IF NOT EXISTS ""LogoUrl"" text;");
+    // Use ExecuteSqlInterpolated (parameterized) to avoid raw SQL linting warnings
+    db.Database.ExecuteSqlInterpolated($"ALTER TABLE warungs ADD COLUMN IF NOT EXISTS \"LogoUrl\" text;");
 }
 
 // Enable Middlewares

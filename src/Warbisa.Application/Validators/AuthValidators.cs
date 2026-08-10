@@ -29,7 +29,9 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
 
         RuleFor(x => x.Password)
             .NotEmpty().WithMessage("Password wajib diisi.")
-            .MinimumLength(6).WithMessage("Password minimal 6 karakter.");
+            .MinimumLength(8).WithMessage("Password minimal 8 karakter.")
+            .Matches("[A-Z]").WithMessage("Password harus mengandung minimal 1 huruf kapital.")
+            .Matches("[0-9]").WithMessage("Password harus mengandung minimal 1 angka.");
 
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("Nama lengkap wajib diisi.");
