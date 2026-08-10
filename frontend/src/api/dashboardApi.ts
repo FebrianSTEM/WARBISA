@@ -15,6 +15,20 @@ export interface TopSellingProduct {
   totalRevenue: number;
 }
 
+export interface TopSellingCategory {
+  categoryName: string;
+  totalQuantitySold: number;
+  totalRevenue: number;
+  percentage: number;
+}
+
+export interface HourlyBuyingFrequency {
+  hour: number;
+  hourLabel: string;
+  transactionCount: number;
+  totalSales: number;
+}
+
 export interface DashboardAnalyticsResponse {
   frequency: string; // 'daily', 'weekly', 'monthly', 'yearly'
   grossSales: number;
@@ -23,6 +37,8 @@ export interface DashboardAnalyticsResponse {
   lowStockAlertCount: number;
   paymentMethods: PaymentMethodBreakdown[];
   topSellingProducts: TopSellingProduct[];
+  topSellingCategories: TopSellingCategory[];
+  peakBuyingHours: HourlyBuyingFrequency[];
 }
 
 export const dashboardApi = {
@@ -33,4 +49,3 @@ export const dashboardApi = {
     return response.data;
   },
 };
-

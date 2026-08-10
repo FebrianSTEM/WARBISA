@@ -4,7 +4,9 @@ import { dashboardApi } from '../api/dashboardApi';
 import type { DashboardAnalyticsResponse } from '../api/dashboardApi';
 import { AnalyticsCard } from '../components/dashboard/AnalyticsCard';
 import { RevenueChart } from '../components/dashboard/RevenueChart';
-import { BarChart3, TrendingUp, DollarSign, ShoppingBag, AlertTriangle, Calendar } from 'lucide-react';
+import { PeakHoursChart } from '../components/dashboard/PeakHoursChart';
+import { exportDashboardToExcel, exportDashboardToPDF } from '../utils/dashboardExport';
+import { BarChart3, TrendingUp, DollarSign, ShoppingBag, AlertTriangle, Calendar, Layers, FileSpreadsheet, FileText } from 'lucide-react';
 
 const MOCK_METRICS: DashboardAnalyticsResponse = {
   frequency: 'daily',
@@ -23,6 +25,18 @@ const MOCK_METRICS: DashboardAnalyticsResponse = {
     { productId: 'p2', productName: 'Beras Pandan Wangi 5kg', sku: 'BRS-5K', totalQuantitySold: 15, totalRevenue: 1080000 },
     { productId: 'p4', productName: 'Kopi Kapal Api Special 165g', sku: 'KPA-165', totalQuantitySold: 30, totalRevenue: 405000 },
     { productId: 'p3', productName: 'Gula Pasir Gulaku 1kg', sku: 'GLK-1K', totalQuantitySold: 25, totalRevenue: 400000 },
+  ],
+  topSellingCategories: [
+    { categoryName: 'Sembako', totalQuantitySold: 88, totalRevenue: 2368000, percentage: 42.5 },
+    { categoryName: 'Makanan', totalQuantitySold: 120, totalRevenue: 420000, percentage: 32.1 },
+    { categoryName: 'Minuman', totalQuantitySold: 32, totalRevenue: 412000, percentage: 18.2 },
+  ],
+  peakBuyingHours: [
+    { hour: 8, hourLabel: '08:00 - 09:00', transactionCount: 12, totalSales: 450000 },
+    { hour: 9, hourLabel: '09:00 - 10:00', transactionCount: 25, totalSales: 1200000 },
+    { hour: 12, hourLabel: '12:00 - 13:00', transactionCount: 38, totalSales: 2100000 },
+    { hour: 17, hourLabel: '17:00 - 18:00', transactionCount: 45, totalSales: 3500000 },
+    { hour: 19, hourLabel: '19:00 - 20:00', transactionCount: 22, totalSales: 1800000 },
   ],
 };
 
@@ -62,52 +76,73 @@ export const DashboardPage: React.FC = () => {
             <span>Dashboard Finansial & Omset</span>
           </h1>
           <p className="text-xs text-slate-500 font-medium mt-1">
-            Ringkasan omset kotor, profit bersih, dan analitik metode pembayaran toko.
+            Ringkasan omset kotor, profit bersih, frekuensi jam belanja, dan analitik kategori terlaris.
           </p>
         </div>
 
-        <div className="flex items-center gap-1 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs shrink-0">
-          <Calendar className="w-4 h-4 text-slate-400 ml-2 mr-1" />
-          <button
-            onClick={() => setPeriod('daily')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              period === 'daily'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Harian
-          </button>
-          <button
-            onClick={() => setPeriod('weekly')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              period === 'weekly'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Mingguan
-          </button>
-          <button
-            onClick={() => setPeriod('monthly')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              period === 'monthly'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Bulanan
-          </button>
-          <button
-            onClick={() => setPeriod('yearly')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-              period === 'yearly'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            Tahunan
-          </button>
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-xs">
+            <Calendar className="w-4 h-4 text-slate-400 ml-2 mr-1" />
+            <button
+              onClick={() => setPeriod('daily')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                period === 'daily'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Harian
+            </button>
+            <button
+              onClick={() => setPeriod('weekly')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                period === 'weekly'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Mingguan
+            </button>
+            <button
+              onClick={() => setPeriod('monthly')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                period === 'monthly'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Bulanan
+            </button>
+            <button
+              onClick={() => setPeriod('yearly')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                period === 'yearly'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Tahunan
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => exportDashboardToExcel(metrics, period)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-bold transition-all shadow-xs"
+              title="Export Laporan ke Excel (.csv)"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+              <span>Export Excel</span>
+            </button>
+            <button
+              onClick={() => exportDashboardToPDF(metrics, period)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 rounded-xl text-xs font-bold transition-all shadow-xs"
+              title="Cetak atau Export Laporan ke PDF"
+            >
+              <FileText className="w-4 h-4 text-slate-600" />
+              <span>Cetak PDF</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -149,40 +184,83 @@ export const DashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Recharts Component */}
-      <RevenueChart paymentDistributions={metrics.paymentMethods} />
+      {/* Charts Section: Payment Method & Peak Hours */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-5">
+          <RevenueChart paymentDistributions={metrics.paymentMethods} />
+        </div>
+        <div className="lg:col-span-7">
+          <PeakHoursChart hourlyData={metrics.peakBuyingHours || []} />
+        </div>
+      </div>
 
-      {/* Top 10 Best Revenue Products */}
-      <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3">
-        <h3 className="font-bold text-slate-900 text-base">Top 10 Produk Revenue Tertinggi</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 uppercase">
-                <th className="pb-3">No</th>
-                <th className="pb-3">SKU</th>
-                <th className="pb-3">Nama Produk</th>
-                <th className="pb-3 text-center">Unit Terjual</th>
-                <th className="pb-3 text-right">Total Revenue</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm font-semibold text-slate-800">
-              {metrics.topSellingProducts.map((prod, idx) => (
-                <tr key={prod.productId}>
-                  <td className="py-3 text-slate-400 text-xs">{idx + 1}</td>
-                  <td className="py-3 font-mono text-xs text-slate-500">{prod.sku}</td>
-                  <td className="py-3 font-bold text-slate-900">{prod.productName}</td>
-                  <td className="py-3 text-center tabular-nums">{prod.totalQuantitySold} Pcs</td>
-                  <td className="py-3 text-right font-extrabold text-emerald-700 tabular-nums">
-                    {formatCurrency(prod.totalRevenue)}
-                  </td>
+      {/* Top 5 Categories & Top 10 Best Revenue Products */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Top 5 Categories (4 cols) */}
+        <div className="lg:col-span-4 bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+          <div>
+            <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
+              <Layers className="w-5 h-5 text-indigo-600" />
+              <span>Top 5 Kategori Paling Laris</span>
+            </h3>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Kategori dengan unit penjualan terbanyak.</p>
+          </div>
+
+          <div className="space-y-3">
+            {metrics.topSellingCategories?.map((cat, idx) => (
+              <div key={cat.categoryName} className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-extrabold text-slate-800">
+                    {idx + 1}. {cat.categoryName}
+                  </span>
+                  <span className="font-bold text-emerald-700">{formatCurrency(cat.totalRevenue)}</span>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-slate-500">
+                  <span>{cat.totalQuantitySold} Unit Terjual</span>
+                  <span className="font-semibold">{cat.percentage}%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-600 rounded-full"
+                    style={{ width: `${Math.min(100, cat.percentage)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Top 10 Products (8 cols) */}
+        <div className="lg:col-span-8 bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3">
+          <h3 className="font-bold text-slate-900 text-base">Top 10 Produk Revenue Tertinggi</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 uppercase">
+                  <th className="pb-3">No</th>
+                  <th className="pb-3">SKU</th>
+                  <th className="pb-3">Nama Produk</th>
+                  <th className="pb-3 text-center">Unit Terjual</th>
+                  <th className="pb-3 text-right">Total Revenue</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-sm font-semibold text-slate-800">
+                {metrics.topSellingProducts?.map((prod, idx) => (
+                  <tr key={prod.productId}>
+                    <td className="py-3 text-slate-400 text-xs">{idx + 1}</td>
+                    <td className="py-3 font-mono text-xs text-slate-500">{prod.sku}</td>
+                    <td className="py-3 font-bold text-slate-900">{prod.productName}</td>
+                    <td className="py-3 text-center tabular-nums">{prod.totalQuantitySold} Pcs</td>
+                    <td className="py-3 text-right font-extrabold text-emerald-700 tabular-nums">
+                      {formatCurrency(prod.totalRevenue)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
   );
 };
-
