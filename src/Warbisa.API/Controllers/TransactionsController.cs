@@ -11,12 +11,12 @@ namespace Warbisa.API.Controllers;
 [Authorize]
 public class TransactionsController : ControllerBase
 {
-    private readonly IPOSService _posService;
+    private readonly ITransactionEngine _transactionEngine;
     private readonly IValidator<POSCheckoutRequest> _validator;
 
-    public TransactionsController(IPOSService posService, IValidator<POSCheckoutRequest> validator)
+    public TransactionsController(ITransactionEngine transactionEngine, IValidator<POSCheckoutRequest> validator)
     {
-        _posService = posService;
+        _transactionEngine = transactionEngine;
         _validator = validator;
     }
 
@@ -29,21 +29,21 @@ public class TransactionsController : ControllerBase
             throw new ValidationException(valResult.Errors);
         }
 
-        var result = await _posService.CreateCheckoutTransactionAsync(request);
+        var result = await _transactionEngine.ProcessCheckoutAsync(request);
         return CreatedAtAction(nameof(GetTransactionById), new { id = result.Id }, result);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetTransactions()
     {
-        var result = await _posService.GetTransactionsAsync();
+        var result = await _transactionEngine.GetTransactionsAsync();
         return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetTransactionById(Guid id)
     {
-        var result = await _posService.GetTransactionByIdAsync(id);
+        var result = await _transactionEngine.GetTransactionByIdAsync(id);
         if (result == null)
         {
             return NotFound(new { message = $"Transaksi dengan ID '{id}' tidak ditemukan." });

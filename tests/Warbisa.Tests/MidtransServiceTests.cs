@@ -70,7 +70,7 @@ public class MidtransServiceTests
     }
 
     [Fact]
-    public async Task ProcessWebhookCallback_ShouldUpdatePaidAmount_AndClampStockToZero()
+    public async Task ProcessWebhookCallback_ShouldUpdatePaidAmount_AndKeepStockReserved()
     {
         var (db, service, settings) = GetSetup();
 
@@ -78,7 +78,7 @@ public class MidtransServiceTests
         var userId = Guid.NewGuid();
         var productId = Guid.NewGuid();
 
-        // Product with stock = 1 (less than requested quantity 2)
+        // Product with stock = 0 (already deducted 2 items during POS checkout creation from 2 -> 0)
         var product = new Product
         {
             Id = productId,
@@ -87,7 +87,7 @@ public class MidtransServiceTests
             Name = "Limited Item",
             CostPrice = 10000,
             SellingPrice = 15000,
-            StockQuantity = 1, // Only 1 in stock
+            StockQuantity = 0, // Stock reserved/deducted at POS checkout creation
             IsActive = true
         };
         db.Products.Add(product);
@@ -136,10 +136,10 @@ public class MidtransServiceTests
 
         var updatedTx = await db.Transactions.FirstAsync(t => t.Id == transaction.Id);
         Assert.Equal("Settled", updatedTx.PaymentStatus);
-        Assert.Equal(30000, updatedTx.PaidAmount); // BUG-03 verified!
+        Assert.Equal(30000, updatedTx.PaidAmount);
 
         var updatedProd = await db.Products.FirstAsync(p => p.Id == productId);
-        Assert.Equal(0, updatedProd.StockQuantity); // BUG-02 verified! Clamped to 0, not -1!
+        Assert.Equal(0, updatedProd.StockQuantity); // Maintained reserved stock
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class MidtransServiceTests
             Name = "Minyak Bimoli 2L",
             CostPrice = 28000,
             SellingPrice = 34000,
-            StockQuantity = 50,
+            StockQuantity = 48, // Already deducted 2 items at checkout creation (50 -> 48)
             IsActive = true
         };
         db.Products.Add(product);
@@ -202,7 +202,7 @@ public class MidtransServiceTests
             TransactionStatus = "settlement"
         };
 
-        // First callback execution -> Settlement & Stock deduction
+        // First callback execution -> Settlement
         var firstResult = await service.ProcessWebhookCallbackAsync(payload);
         Assert.True(firstResult);
 
@@ -218,5 +218,75 @@ public class MidtransServiceTests
 
         var productAfterDuplicate = await db.Products.FirstAsync(p => p.Id == productId);
         Assert.Equal(48, productAfterDuplicate.StockQuantity);
+    }
+
+    [Fact]
+    public async Task ProcessWebhookCallback_ShouldRestoreStock_WhenPaymentExpiredOrCancelled()
+    {
+        var (db, service, settings) = GetSetup();
+
+        var warungId = Guid.NewGuid();
+        var userId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var product = new Product
+        {
+            Id = productId,
+            WarungId = warungId,
+            Sku = "SKU-EXPIRE",
+            Name = "Expired Item",
+            CostPrice = 5000,
+            SellingPrice = 8000,
+            StockQuantity = 8, // Was 10, deducted 2 during checkout creation (10 -> 8)
+            IsActive = true
+        };
+        db.Products.Add(product);
+
+        var transaction = new Transaction
+        {
+            Id = Guid.NewGuid(),
+            InvoiceNo = "INV-EXPIRED-001",
+            WarungId = warungId,
+            UserId = userId,
+            PaymentMethod = "QRIS",
+            PaymentStatus = "Pending",
+            TotalAmount = 16000,
+            MidtransOrderId = "INV-EXPIRED-001",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        transaction.Items.Add(new TransactionItem
+        {
+            Id = Guid.NewGuid(),
+            TransactionId = transaction.Id,
+            ProductId = productId,
+            Quantity = 2,
+            CostPriceAtSale = 5000,
+            SellingPriceAtSale = 8000,
+            Subtotal = 16000
+        });
+
+        db.Transactions.Add(transaction);
+        await db.SaveChangesAsync();
+
+        var validHash = ComputeSha512($"INV-EXPIRED-00120016000.00{settings.ServerKey}");
+
+        var payload = new MidtransWebhookPayload
+        {
+            OrderId = "INV-EXPIRED-001",
+            StatusCode = "200",
+            GrossAmount = "16000.00",
+            SignatureKey = validHash,
+            TransactionStatus = "expire"
+        };
+
+        var result = await service.ProcessWebhookCallbackAsync(payload);
+        Assert.True(result);
+
+        var updatedTx = await db.Transactions.FirstAsync(t => t.Id == transaction.Id);
+        Assert.Equal("Expired", updatedTx.PaymentStatus);
+
+        var restoredProd = await db.Products.FirstAsync(p => p.Id == productId);
+        Assert.Equal(10, restoredProd.StockQuantity); // Stock restored from 8 -> 10!
     }
 }

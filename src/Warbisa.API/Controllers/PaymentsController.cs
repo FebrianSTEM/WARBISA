@@ -9,11 +9,11 @@ namespace Warbisa.API.Controllers;
 [Route("api/v1/payments")]
 public class PaymentsController : ControllerBase
 {
-    private readonly IMidtransService _midtransService;
+    private readonly ITransactionEngine _transactionEngine;
 
-    public PaymentsController(IMidtransService midtransService)
+    public PaymentsController(ITransactionEngine transactionEngine)
     {
-        _midtransService = midtransService;
+        _transactionEngine = transactionEngine;
     }
 
     [HttpPost("midtrans-callback")]
@@ -25,7 +25,7 @@ public class PaymentsController : ControllerBase
             return BadRequest(new { message = "Payload webhook tidak boleh kosong." });
         }
 
-        var success = await _midtransService.ProcessWebhookCallbackAsync(payload);
+        var success = await _transactionEngine.ProcessPaymentWebhookAsync(payload);
         if (success)
         {
             return Ok(new { status = "success", message = "Callback Midtrans berhasil diproses." });
