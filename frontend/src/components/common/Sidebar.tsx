@@ -43,8 +43,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <aside className="fixed md:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 min-h-[calc(100vh-65px)] p-4 flex flex-col justify-between shrink-0 shadow-lg md:shadow-none transition-all duration-300 animate-in slide-in-from-left-4">
-      <div className="space-y-1">
+    <aside className="fixed md:static inset-y-0 left-0 z-40 w-64 bg-white/95 backdrop-blur-md border-r border-slate-200/80 min-h-[calc(100vh-65px)] p-4 flex flex-col justify-between shrink-0 shadow-lg md:shadow-none transition-all duration-300">
+      <div className="space-y-1.5">
         <p className="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
           Menu Utama
         </p>
@@ -61,9 +61,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                 }
               }}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+                `flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all ${
                   isActive
-                    ? 'bg-emerald-50 text-emerald-700 shadow-xs border border-emerald-200/60'
+                    ? 'bg-emerald-50 text-emerald-700 shadow-xs border border-emerald-200/80 translate-x-1'
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`
               }
@@ -75,9 +75,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
         })}
       </div>
 
-      <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-xs text-slate-500">
-        <p className="font-semibold text-slate-700">WASERBI v1.0</p>
-        <p className="mt-0.5">Dual-Pane POS & Realtime Stock Ledger</p>
+      <div className="p-3.5 bg-emerald-50/50 rounded-2xl border border-emerald-100/80 text-xs text-slate-500">
+        <p className="font-extrabold text-emerald-800">WASERBI v1.2</p>
+        <p className="mt-0.5 text-slate-500 font-medium">Point of Sale & Realtime Stock Ledger</p>
       </div>
     </aside>
   );
