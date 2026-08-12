@@ -9,6 +9,8 @@ using Warbisa.Infrastructure.Authentication;
 using Warbisa.Infrastructure.Persistence;
 using Warbisa.Infrastructure.Services;
 
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
 namespace Warbisa.Infrastructure;
 
 public static class DependencyInjection
@@ -40,6 +42,7 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseNpgsql(connectionString, b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName));
+            options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
