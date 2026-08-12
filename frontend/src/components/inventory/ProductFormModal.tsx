@@ -265,6 +265,41 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           </div>
         </div>
 
+        {/* Live Profit Margin Calculator Indicator */}
+        {formData.sellingPrice > 0 && (
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+            <span className="font-semibold text-slate-600">Estimasi Untung Bersih per Satuan:</span>
+            {(() => {
+              const profit = formData.sellingPrice - formData.costPrice;
+              const marginPct = (profit / formData.sellingPrice) * 100;
+              const isProfitable = profit > 0;
+              const isHighMargin = marginPct >= 20;
+              const isLowMargin = marginPct < 10;
+
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold tabular-nums text-slate-800">
+                    {formatCurrency(profit)}
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-bold ${
+                      !isProfitable
+                        ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                        : isHighMargin
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : isLowMargin
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}
+                  >
+                    Margin: {marginPct.toFixed(1)}%
+                  </span>
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-bold text-slate-700 block mb-1">Stok Awal</label>

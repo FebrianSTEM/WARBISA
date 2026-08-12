@@ -309,9 +309,21 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
           <div className="flex flex-col items-center justify-center h-64 text-center p-6 bg-white rounded-2xl border border-dashed border-slate-300">
             <PackageX className="w-12 h-12 text-slate-300 mb-2" />
             <p className="text-slate-700 font-bold">Produk Tidak Ditemukan</p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1 mb-4">
               Coba kata kunci pencarian atau kategori yang berbeda.
             </p>
+            {(searchQuery || selectedCategory) && (
+              <button
+                type="button"
+                onClick={() => {
+                  onSearchChange('');
+                  onSelectCategory('');
+                }}
+                className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-xl border border-emerald-200 transition-colors cursor-pointer"
+              >
+                Reset Semua Filter & Pencarian
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">

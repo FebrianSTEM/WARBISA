@@ -319,6 +319,10 @@ export const InventoryPage: React.FC = () => {
           setAdjustingProduct(p);
           setIsAdjustOpen(true);
         }}
+        onAddNewProduct={() => {
+          setEditingProduct(null);
+          setIsFormOpen(true);
+        }}
         isLoading={isLoading}
       />
 
