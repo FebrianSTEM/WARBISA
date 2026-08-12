@@ -5,9 +5,10 @@ import { ShoppingBag, Trash2, Plus, Minus, CreditCard, Banknote, QrCode, ArrowRi
 interface CartDrawerProps {
   onCheckout: () => void;
   isSubmitting: boolean;
+  onCloseMobile?: () => void;
 }
 
-export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting }) => {
+export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting, onCloseMobile }) => {
   const {
     items,
     customerName,
@@ -57,20 +58,31 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
             {items.length} item
           </span>
         </div>
-        {items.length > 0 && (
-          <button
-            onClick={clearCart}
-            className="text-xs text-rose-600 font-semibold hover:bg-rose-50 px-2 py-1 rounded-lg transition-colors"
-          >
-            Kosongkan
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {items.length > 0 && (
+            <button
+              onClick={clearCart}
+              className="text-xs text-rose-600 font-semibold hover:bg-rose-50 px-2 py-1 rounded-lg transition-colors cursor-pointer"
+            >
+              Kosongkan
+            </button>
+          )}
+          {onCloseMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="md:hidden p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
+              title="Tutup Keranjang"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Cart Items List */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {items.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center text-slate-400">
+          <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 py-8">
             <ShoppingBag className="w-12 h-12 stroke-[1.5] mb-2 text-slate-300" />
             <p className="font-semibold text-slate-600">Keranjang masih kosong</p>
             <p className="text-xs mt-1">Klik barang di katalog untuk menambahkan</p>
@@ -79,7 +91,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
           items.map((item) => (
             <div
               key={item.productId}
-              className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80"
+              className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-emerald-200 transition-colors"
             >
               <div className="flex-1 min-w-0 pr-2">
                 <p className="text-xs font-semibold text-slate-500">SKU: {item.sku}</p>
@@ -90,10 +102,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden">
+                <div className="flex items-center border border-slate-300 rounded-lg bg-white overflow-hidden shadow-2xs">
                   <button
                     onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                    className="p-1 hover:bg-slate-100 text-slate-600"
+                    className="p-1.5 hover:bg-slate-100 text-slate-600 cursor-pointer active:bg-slate-200"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
@@ -102,7 +114,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
                   </span>
                   <button
                     onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                    className="p-1 hover:bg-slate-100 text-slate-600"
+                    className="p-1.5 hover:bg-slate-100 text-slate-600 cursor-pointer active:bg-slate-200"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -116,7 +128,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
 
                 <button
                   onClick={() => removeItem(item.productId)}
-                  className="p-1 text-slate-400 hover:text-rose-600 rounded-lg"
+                  className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -147,7 +159,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
           <div className="grid grid-cols-3 gap-2">
             <button
               onClick={() => setPaymentMethod('Cash')}
-              className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border transition-all ${
+              className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 paymentMethod === 'Cash'
                   ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                   : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -158,7 +170,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
             </button>
             <button
               onClick={() => setPaymentMethod('QRIS')}
-              className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border transition-all ${
+              className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 paymentMethod === 'QRIS'
                   ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                   : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -169,7 +181,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
             </button>
             <button
               onClick={() => setPaymentMethod('Transfer')}
-              className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border transition-all ${
+              className={`flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                 paymentMethod === 'Transfer'
                   ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
                   : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -201,12 +213,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
             </div>
 
             {/* Quick Nominal Badges */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
               {quickNominals.map((nom) => (
                 <button
                   key={nom}
                   onClick={() => setPaidAmount(nom)}
-                  className="px-2 py-1 bg-white border border-slate-200 hover:border-emerald-400 rounded-lg text-[10px] font-bold text-slate-700 tabular-nums shrink-0"
+                  className="px-2 py-1 bg-white border border-slate-200 hover:border-emerald-400 rounded-lg text-[10px] font-bold text-slate-700 tabular-nums shrink-0 cursor-pointer"
                 >
                   {nom === totalAmount ? 'Uang Pas' : formatCurrency(nom)}
                 </button>
