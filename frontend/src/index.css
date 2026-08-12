@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-bgApp: #F8FAFC;
   --color-surface: #FFFFFF;
@@ -25,14 +27,87 @@
   }
 }
 
-/* Dark Mode Base Overrides */
-html.dark body {
-  background-color: #0B0F17;
-  color: #F8FAFC;
-}
-
+/* Dark Mode Base & Global Surface Overrides */
 html.dark {
   color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #090D16 !important;
+  color: #F8FAFC !important;
+}
+
+/* Background surface overrides */
+html.dark .bg-white {
+  background-color: #111827 !important; /* Slate-900 card surface */
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-50\/50,
+html.dark .bg-slate-50\/70,
+html.dark .bg-slate-50\/80 {
+  background-color: #0F172A !important;
+}
+
+html.dark .bg-slate-100 {
+  background-color: #1E293B !important;
+}
+
+html.dark .bg-slate-200,
+html.dark .bg-slate-200\/60,
+html.dark .bg-slate-200\/70 {
+  background-color: #334155 !important;
+}
+
+/* Text color overrides */
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #F8FAFC !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: #E2E8F0 !important;
+}
+
+html.dark .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+html.dark .text-slate-400 {
+  color: #64748B !important;
+}
+
+/* Border overrides */
+html.dark .border-slate-200,
+html.dark .border-slate-200\/50,
+html.dark .border-slate-200\/60,
+html.dark .border-slate-200\/70,
+html.dark .border-slate-200\/80,
+html.dark .border-slate-100 {
+  border-color: #1E293B !important;
+}
+
+html.dark .border-slate-300 {
+  border-color: #334155 !important;
+}
+
+/* Form Controls & Inputs */
+html.dark input[type="text"],
+html.dark input[type="email"],
+html.dark input[type="password"],
+html.dark input[type="tel"],
+html.dark input[type="number"],
+html.dark select,
+html.dark textarea {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  border-color: #334155 !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748B !important;
 }
 
 .tabular-nums {
