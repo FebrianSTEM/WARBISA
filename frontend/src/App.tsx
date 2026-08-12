@@ -40,7 +40,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
+    <div className="h-screen bg-[#F8FAFC] flex flex-col font-sans overflow-hidden">
       <Navbar isSidebarOpen={isSidebarOpen} onToggleSidebar={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -48,7 +48,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
         {/* Mobile Backdrop Overlay */}
         <div
           onClick={() => setIsSidebarOpen(false)}
-          className={`md:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-xs z-30 transition-opacity duration-300 ${
+          className={`md:hidden fixed inset-0 top-16 bg-slate-900/40 backdrop-blur-xs z-20 transition-opacity duration-300 ${
             isSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
           }`}
         />
