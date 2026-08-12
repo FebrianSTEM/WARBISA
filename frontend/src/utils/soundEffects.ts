@@ -50,27 +50,51 @@ class SoundManager {
     }
   }
 
-  // Play Cash Register Cha-Ching for checkout completion
+  // Play Cash Register "Cha-Ching!" success fanfare for checkout completion
   playCheckoutSound() {
     try {
       const ctx = this.getContext();
       const now = ctx.currentTime;
 
-      // Triple chord chime (C6, E6, G6)
-      [1046.50, 1318.51, 1567.98].forEach((freq, idx) => {
+      // 4-Note Ascending Cash Register Arpeggio (G5 -> C6 -> E6 -> G6)
+      const notes = [
+        { freq: 783.99, delay: 0.00, duration: 0.12, gain: 0.15 },
+        { freq: 1046.50, delay: 0.05, duration: 0.15, gain: 0.18 },
+        { freq: 1318.51, delay: 0.10, duration: 0.18, gain: 0.20 },
+        { freq: 1567.98, delay: 0.15, duration: 0.35, gain: 0.25 },
+      ];
+
+      notes.forEach((n) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now + idx * 0.04);
-        gain.gain.setValueAtTime(0.15, now + idx * 0.04);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.25);
+        osc.frequency.setValueAtTime(n.freq, now + n.delay);
+
+        gain.gain.setValueAtTime(n.gain, now + n.delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + n.delay + n.duration);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
-        osc.start(now + idx * 0.04);
-        osc.stop(now + idx * 0.04 + 0.25);
+        osc.start(now + n.delay);
+        osc.stop(now + n.delay + n.duration);
       });
-    } catch {}
+
+      // Metallic Bell Shimmer (High C7 Ping - 2093 Hz)
+      const shimmerOsc = ctx.createOscillator();
+      const shimmerGain = ctx.createGain();
+      shimmerOsc.type = 'sine';
+      shimmerOsc.frequency.setValueAtTime(2093.00, now + 0.18);
+
+      shimmerGain.gain.setValueAtTime(0.12, now + 0.18);
+      shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 0.50);
+
+      shimmerOsc.connect(shimmerGain);
+      shimmerGain.connect(ctx.destination);
+      shimmerOsc.start(now + 0.18);
+      shimmerOsc.stop(now + 0.50);
+    } catch {
+      // Ignore audio policy errors
+    }
   }
 }
 
