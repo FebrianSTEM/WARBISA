@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCartStore } from '../../store/useCartStore';
 import { ShoppingBag, Trash2, Plus, Minus, CreditCard, Banknote, QrCode, ArrowRight } from 'lucide-react';
+import { soundManager } from '../../utils/soundEffects';
 
 interface CartDrawerProps {
   onCheckout: () => void;
@@ -9,6 +10,7 @@ interface CartDrawerProps {
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting, onCloseMobile }) => {
+  const [addingItemProductId, setAddingItemProductId] = useState<string | null>(null);
   const {
     items,
     customerName,
@@ -33,6 +35,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
       currency: 'IDR',
       maximumFractionDigits: 0,
     }).format(val);
+  };
+
+  const handleCheckoutClick = () => {
+    soundManager.playCheckoutSound();
+    onCheckout();
   };
 
   const quickNominals = [
@@ -113,8 +120,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
                     {item.quantity}
                   </span>
                   <button
-                    onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                    className="p-1.5 hover:bg-slate-100 text-slate-600 cursor-pointer active:bg-slate-200"
+                    onClick={() => {
+                      soundManager.playAddSound();
+                      setAddingItemProductId(item.productId);
+                      setTimeout(() => {
+                        updateQuantity(item.productId, item.quantity + 1);
+                        setAddingItemProductId(null);
+                      }, 100);
+                    }}
+                    className={`p-1.5 hover:bg-slate-100 text-slate-600 cursor-pointer active:scale-125 transition-transform ${
+                      addingItemProductId === item.productId ? 'text-emerald-600 scale-125' : ''
+                    }`}
+                    title="Tambah Jumlah Barang"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -252,7 +269,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout, isSubmitting
           </div>
 
           <button
-            onClick={onCheckout}
+            onClick={handleCheckoutClick}
             disabled={!isValidCheckout || isSubmitting}
             className={`w-full py-3 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all ${
               isValidCheckout && !isSubmitting
