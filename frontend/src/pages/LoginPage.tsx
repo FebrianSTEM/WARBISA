@@ -182,7 +182,7 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Main Form Container Card */}
-        <div className="w-full max-w-md bg-white rounded-[2rem] border border-slate-200/90 shadow-2xl shadow-slate-300/40 p-7 sm:p-9 space-y-6 relative overflow-hidden z-10">
+        <div className="w-full max-w-md bg-white rounded-[2rem] border border-slate-200/90 shadow-2xl shadow-slate-300/40 p-7 sm:p-9 space-y-6 relative overflow-hidden z-10 animate-auth-slide-left">
           {/* Header */}
           <div className="space-y-1.5 pt-1">
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200">

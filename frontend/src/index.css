@@ -139,7 +139,7 @@ html.dark textarea::placeholder {
   background: #94A3B8;
 }
 
-/* Keyframe animations for Mobile Bottom Drawer & Toasts */
+/* Keyframe animations for Mobile Bottom Drawer, Toasts, & Auth Transitions */
 @keyframes slideUp {
   from {
     transform: translateY(100%);
@@ -156,12 +156,42 @@ html.dark textarea::placeholder {
   to { opacity: 1; }
 }
 
+@keyframes authSlideLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-32px, 0, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes authSlideRight {
+  from {
+    opacity: 0;
+    transform: translate3d(32px, 0, 0) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
 .animate-slide-up {
   animation: slideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-fade-in {
   animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-auth-slide-left {
+  animation: authSlideLeft 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-auth-slide-right {
+  animation: authSlideRight 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* HTML5-QRCode Scanner Custom Styling (Clean full-bleed camera feed) */
