@@ -210,12 +210,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             b.HasOne(x => x.Transaction)
                 .WithMany(x => x.Items)
                 .HasForeignKey(x => x.TransactionId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
 
             b.HasOne(x => x.Product)
                 .WithMany(x => x.TransactionItems)
                 .HasForeignKey(x => x.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
         });
 
         // Seed Data
