@@ -21,6 +21,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import type { CashierUser } from '../api/cashierApi';
+import { formatDateInTimeZone } from '../utils/dateFormatter';
 
 export const CashierManagementPage: React.FC = () => {
   const {
@@ -331,7 +332,7 @@ export const CashierManagementPage: React.FC = () => {
                     <td className="py-4 px-4 text-slate-500 text-[11px]">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{cashier.lastActive ? new Date(cashier.lastActive).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Belum Pernah'}</span>
+                        <span>{cashier.lastActive ? formatDateInTimeZone(cashier.lastActive) : 'Belum Pernah'}</span>
                       </div>
                     </td>
 

@@ -23,6 +23,8 @@ export interface UserDTO {
   warungLogoUrl?: string;
   warungAddress?: string;
   warungPhone?: string;
+  timeZone?: string;
+  themeMode?: 'light' | 'dark' | 'auto';
   roleId: number;
   roleName: string;
   username: string;
@@ -49,6 +51,8 @@ export interface UpdateWarungProfileRequest {
   warungLogoUrl?: string;
   address?: string;
   phone?: string;
+  timeZone?: string;
+  themeMode?: 'light' | 'dark' | 'auto';
 }
 
 export const authApi = {

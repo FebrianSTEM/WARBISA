@@ -76,6 +76,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           warungLogoUrl: data.warungLogoUrl,
           warungAddress: data.address,
           warungPhone: data.phone,
+          timeZone: data.timeZone || current.timeZone || 'Asia/Jakarta',
+          themeMode: data.themeMode || current.themeMode || 'auto',
         };
       }
       localStorage.setItem('warbisa_user', JSON.stringify(updatedUser));
