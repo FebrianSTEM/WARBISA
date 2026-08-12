@@ -7,6 +7,7 @@ public class Warung
     public string? Address { get; set; }
     public string? Phone { get; set; }
     public string? LogoUrl { get; set; }
+    public string TimeZone { get; set; } = "Asia/Jakarta";
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<User> Users { get; set; } = new List<User>();

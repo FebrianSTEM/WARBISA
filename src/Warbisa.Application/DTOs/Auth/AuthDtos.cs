@@ -14,6 +14,7 @@ public class UserDto
     public string? WarungLogoUrl { get; set; }
     public string? WarungAddress { get; set; }
     public string? WarungPhone { get; set; }
+    public string TimeZone { get; set; } = "Asia/Jakarta";
     public int RoleId { get; set; }
     public string RoleName { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
@@ -47,6 +48,7 @@ public class UpdateWarungProfileRequest
     public string? WarungLogoUrl { get; set; }
     public string? Address { get; set; }
     public string? Phone { get; set; }
+    public string? TimeZone { get; set; }
 }
 
 public class MenuDto
