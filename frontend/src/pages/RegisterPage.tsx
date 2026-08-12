@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import {
@@ -26,7 +26,7 @@ import type { ToastMessage } from '../components/common/Toast';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { register, isLoading, error } = useAuthStore();
+  const { register, isLoading, error, clearError } = useAuthStore();
 
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
@@ -41,6 +41,10 @@ export const RegisterPage: React.FC = () => {
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
