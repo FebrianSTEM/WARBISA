@@ -5,6 +5,7 @@ import { posApi } from '../api/posApi';
 import type { TransactionReceiptResponse } from '../api/posApi';
 import { useCartStore } from '../store/useCartStore';
 import type { ToastMessage } from '../components/common/Toast';
+import { soundManager } from '../utils/soundEffects';
 
 const MOCK_PRODUCTS: Product[] = [
   { id: 'p1', warungId: 'w1', sku: 'SKU-1001', barcode: '8991234567890', name: 'Minyak Goreng Bimoli 1L', categoryName: 'Sembako', unit: 'Pcs', costPrice: 16000, sellingPrice: 18500, stockQuantity: 24, minStockThreshold: 5, isActive: true },
@@ -194,6 +195,7 @@ export function usePOSTerminal() {
 
       setReceipt(responseReceipt);
       setIsReceiptOpen(true);
+      soundManager.playCheckoutSound();
       clearCart();
     } catch (err: any) {
       setToast({
