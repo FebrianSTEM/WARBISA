@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
-import { Store, Upload, Trash2, Save, Phone, MapPin, Building, Printer } from 'lucide-react';
+import { Store, Upload, Trash2, Save, Phone, MapPin, Building, Printer, Clock, Globe } from 'lucide-react';
 import { Toast } from '../components/common/Toast';
 import type { ToastMessage } from '../components/common/Toast';
+import { formatDateTimeInTimeZone } from '../utils/dateFormatter';
 
 export const WarungSettingsPage: React.FC = () => {
   const { user, updateWarungProfile } = useAuthStore();
@@ -11,6 +12,7 @@ export const WarungSettingsPage: React.FC = () => {
   const [logoUrl, setLogoUrl] = useState<string>(user?.warungLogoUrl || '');
   const [address, setAddress] = useState<string>(user?.warungAddress || '');
   const [phone, setPhone] = useState<string>(user?.warungPhone || '');
+  const [timeZone, setTimeZone] = useState<string>(user?.timeZone || 'Asia/Jakarta');
 
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -69,12 +71,13 @@ export const WarungSettingsPage: React.FC = () => {
         warungLogoUrl: logoUrl || undefined,
         address: address.trim() || undefined,
         phone: phone.trim() || undefined,
+        timeZone,
       });
 
       setToast({
         id: Date.now().toString(),
         type: 'success',
-        message: 'Profil Nama & Logo Warung berhasil diperbarui!',
+        message: 'Profil & Zona Waktu Warung berhasil diperbarui!',
       });
     } catch {
       setToast({
@@ -194,6 +197,35 @@ export const WarungSettingsPage: React.FC = () => {
                   placeholder="081234567890"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"
                 />
+              </div>
+            </div>
+
+            {/* Zona Waktu Warung (Timezone) */}
+            <div className="space-y-1 pt-1">
+              <label className="text-xs font-bold text-slate-800 block flex items-center justify-between">
+                <span>Zona Waktu Operasional Toko (Timezone) *</span>
+                <span className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  UTC+7 (WIB) Default
+                </span>
+              </label>
+              <div className="relative">
+                <Globe className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <select
+                  value={timeZone}
+                  onChange={(e) => setTimeZone(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white cursor-pointer"
+                >
+                  <option value="Asia/Jakarta">🇮🇩 Asia/Jakarta — WIB (Waktu Indonesia Barat: UTC+07:00)</option>
+                  <option value="Asia/Makassar">🇮🇩 Asia/Makassar — WITA (Waktu Indonesia Tengah: UTC+08:00)</option>
+                  <option value="Asia/Jayapura">🇮🇩 Asia/Jayapura — WIT (Waktu Indonesia Timur: UTC+09:00)</option>
+                  <option value="UTC">🌐 UTC — Coordinated Universal Time (UTC+00:00)</option>
+                </select>
+              </div>
+              <div className="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-[11px] font-semibold text-emerald-900 flex items-center gap-2 mt-1">
+                <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>
+                  Waktu Live Warung Sekarang: <strong>{formatDateTimeInTimeZone(new Date(), timeZone)}</strong>
+                </span>
               </div>
             </div>
 

@@ -3,6 +3,7 @@ import type { TransactionReceiptResponse } from '../../api/posApi';
 import { Modal } from '../common/Modal';
 import { Printer, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { formatDateTimeInTimeZone } from '../../utils/dateFormatter';
 
 interface ReceiptModalProps {
   isOpen: boolean;
@@ -24,20 +25,6 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, rec
     }).format(val);
   };
 
-  const formatDate = (dateStr: string) => {
-    try {
-      return new Date(dateStr).toLocaleString('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
   const handlePrint = () => {
     window.print();
   };
@@ -52,7 +39,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, rec
           <h2 className="text-xl font-extrabold text-slate-900 uppercase tracking-tight">{warungDisplayName}</h2>
           <p className="text-xs text-slate-500 font-medium">Nota Pembayaran Resmi</p>
           <p className="text-xs text-slate-400 mt-1">No. Nota: <span className="font-bold text-slate-700">{receipt.invoiceNo}</span></p>
-          <p className="text-[11px] text-slate-400">{formatDate(receipt.createdAt)}</p>
+          <p className="text-[11px] text-slate-400">{formatDateTimeInTimeZone(receipt.createdAt)}</p>
         </div>
 
         <div className="text-xs space-y-1 text-slate-600 border-b border-dashed border-slate-300 pb-3">

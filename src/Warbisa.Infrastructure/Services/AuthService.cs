@@ -56,6 +56,7 @@ public class AuthService : IAuthService
                 WarungLogoUrl = user.Warung?.LogoUrl,
                 WarungAddress = user.Warung?.Address,
                 WarungPhone = user.Warung?.Phone,
+                TimeZone = user.Warung?.TimeZone ?? "Asia/Jakarta",
                 RoleId = user.RoleId,
                 RoleName = roleName,
                 Username = user.Username,
@@ -176,6 +177,10 @@ public class AuthService : IAuthService
         warung.LogoUrl = string.IsNullOrWhiteSpace(request.WarungLogoUrl) ? null : request.WarungLogoUrl.Trim();
         warung.Address = string.IsNullOrWhiteSpace(request.Address) ? null : request.Address.Trim();
         warung.Phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim();
+        if (!string.IsNullOrWhiteSpace(request.TimeZone))
+        {
+            warung.TimeZone = request.TimeZone.Trim();
+        }
 
         await _context.SaveChangesAsync();
 
@@ -192,6 +197,7 @@ public class AuthService : IAuthService
             WarungLogoUrl = warung.LogoUrl,
             WarungAddress = warung.Address,
             WarungPhone = warung.Phone,
+            TimeZone = warung.TimeZone,
             RoleId = user?.RoleId ?? 1,
             RoleName = user?.Role?.Name ?? "Owner",
             Username = user?.Username ?? "",
