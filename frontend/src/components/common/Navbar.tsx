@@ -12,7 +12,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
   const { user, logout } = useAuthStore();
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-30 px-4 sm:px-6 py-3 flex items-center justify-between shadow-xs">
+    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 h-16 px-4 sm:px-6 flex items-center justify-between shadow-xs shrink-0">
       <div className="flex items-center gap-3">
         {onToggleSidebar && (
           <button

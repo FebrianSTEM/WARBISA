@@ -8,6 +8,7 @@ import {
   BarChart3,
   LayoutDashboard,
   Settings,
+  Users,
   ChevronRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -19,6 +20,7 @@ const iconMap: Record<string, LucideIcon> = {
   BarChart3: BarChart3,
   LayoutDashboard: LayoutDashboard,
   Settings: Settings,
+  Users: Users,
 };
 
 interface SidebarProps {
@@ -36,6 +38,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     { id: '1', title: 'POS Kasir', path: '/pos', iconName: 'ShoppingCart', roles: ['Owner', 'Staff'] },
     { id: '2', title: 'Manajemen Produk', path: '/inventory', iconName: 'Package', roles: ['Owner', 'Staff'] },
     { id: '3', title: 'Low Stock Alert', path: '/low-stock', iconName: 'AlertTriangle', roles: ['Owner', 'Staff'] },
+    ...(user?.roleName === 'Owner'
+      ? [{ id: '5', title: 'Manajemen Kasir', path: '/cashiers', iconName: 'Users', roles: ['Owner'] }]
+      : []),
     { id: '4', title: 'Pengaturan Warung', path: '/settings', iconName: 'Settings', roles: ['Owner', 'Staff'] },
   ];
 
@@ -43,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
   return (
     <aside
-      className={`fixed md:static inset-y-0 left-0 z-40 bg-slate-50/70 backdrop-blur-md border-r border-slate-200/50 min-h-[calc(100vh-65px)] flex flex-col justify-between shrink-0 shadow-lg md:shadow-none transition-all duration-300 ease-in-out ${
+      className={`fixed md:sticky top-16 z-30 bg-slate-50/80 backdrop-blur-xl border-r border-slate-200/70 h-[calc(100vh-64px)] flex flex-col justify-between shrink-0 shadow-xl md:shadow-none transition-all duration-300 ease-in-out ${
         isOpen
           ? 'w-64 p-4 opacity-100 translate-x-0'
           : 'w-0 p-0 opacity-0 -translate-x-full md:translate-x-0 border-none overflow-hidden pointer-events-none'

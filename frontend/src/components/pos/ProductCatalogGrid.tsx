@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { Product, CategoryDTO } from '../../api/inventoryApi';
-import { Search, Camera, Plus, PackageX, Video, RefreshCw, AlertCircle, X } from 'lucide-react';
+import { Search, Camera, Plus, PackageX, Video, RefreshCw, AlertCircle, X, Check } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { soundManager } from '../../utils/soundEffects';
 
 interface ProductCatalogGridProps {
   products: Product[];
@@ -34,6 +35,7 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
   const [scanError, setScanError] = useState<string | null>(null);
   const [cameraDevices, setCameraDevices] = useState<{ id: string; label: string }[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string>('');
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
 
   const inlineQrCodeRef = useRef<Html5Qrcode | null>(null);
   const lastScanTimeRef = useRef<{ code: string; time: number }>({ code: '', time: 0 });
@@ -329,13 +331,29 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
             {products.map((product) => {
               const isOutOfStock = product.stockQuantity <= 0;
+              const isAnimating = addingProductId === product.id;
+
+              const handleAdd = (e: React.MouseEvent) => {
+                e.stopPropagation();
+                if (isOutOfStock) return;
+
+                soundManager.playAddSound();
+                setAddingProductId(product.id);
+                setTimeout(() => {
+                  onAddToCart(product);
+                  setAddingProductId(null);
+                }, 120);
+              };
+
               return (
                 <div
                   key={product.id}
-                  onClick={() => !isOutOfStock && onAddToCart(product)}
-                  className={`bg-white rounded-2xl p-4 border border-slate-200 hover:border-emerald-300 hover:shadow-md transition-all flex flex-col justify-between cursor-pointer group relative overflow-hidden ${
-                    isOutOfStock ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''
-                  }`}
+                  onClick={handleAdd}
+                  className={`bg-white rounded-2xl p-4 border transition-all flex flex-col justify-between cursor-pointer group relative overflow-hidden ${
+                    isAnimating
+                      ? 'border-emerald-500 scale-95 shadow-lg bg-emerald-50/40 ring-4 ring-emerald-500/20'
+                      : 'border-slate-200 hover:border-emerald-300 hover:shadow-md'
+                  } ${isOutOfStock ? 'opacity-60 cursor-not-allowed bg-slate-50' : ''}`}
                 >
                   {product.stockQuantity <= product.minStockThreshold && !isOutOfStock && (
                     <div className="absolute top-2 right-2">
@@ -363,14 +381,18 @@ export const ProductCatalogGrid: React.FC<ProductCatalogGridProps> = ({
                     </div>
 
                     <button
+                      type="button"
                       disabled={isOutOfStock}
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors ${
-                        isOutOfStock
-                          ? 'bg-slate-200 text-slate-400'
+                      onClick={handleAdd}
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                        isAnimating
+                          ? 'bg-emerald-600 text-white scale-110 rotate-12 shadow-md shadow-emerald-600/30'
+                          : isOutOfStock
+                          ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                           : 'bg-emerald-100 text-emerald-700 group-hover:bg-emerald-600 group-hover:text-white'
                       }`}
                     >
-                      <Plus className="w-5 h-5" />
+                      {isAnimating ? <Check className="w-5 h-5 animate-bounce" /> : <Plus className="w-5 h-5" />}
                     </button>
                   </div>
                 </div>
