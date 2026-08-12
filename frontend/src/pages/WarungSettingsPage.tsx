@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
-import { Store, Upload, Trash2, Save, Phone, MapPin, Building, Printer, Clock, Globe } from 'lucide-react';
+import { useThemeStore } from '../store/useThemeStore';
+import type { ThemeMode } from '../store/useThemeStore';
+import { Store, Upload, Trash2, Save, Phone, MapPin, Building, Printer, Clock, Globe, Sun, Moon, Sparkles } from 'lucide-react';
 import { Toast } from '../components/common/Toast';
 import type { ToastMessage } from '../components/common/Toast';
 import { formatDateTimeInTimeZone } from '../utils/dateFormatter';
 
 export const WarungSettingsPage: React.FC = () => {
   const { user, updateWarungProfile } = useAuthStore();
+  const { themeMode, effectiveTheme, setThemeMode } = useThemeStore();
 
   const [warungName, setWarungName] = useState<string>(user?.warungName || 'WARBISA');
   const [logoUrl, setLogoUrl] = useState<string>(user?.warungLogoUrl || '');
   const [address, setAddress] = useState<string>(user?.warungAddress || '');
   const [phone, setPhone] = useState<string>(user?.warungPhone || '');
   const [timeZone, setTimeZone] = useState<string>(user?.timeZone || 'Asia/Jakarta');
+  const [selectedThemeMode, setSelectedThemeMode] = useState<ThemeMode>(themeMode);
 
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -66,18 +70,20 @@ export const WarungSettingsPage: React.FC = () => {
 
     try {
       setIsSaving(true);
+      setThemeMode(selectedThemeMode);
       await updateWarungProfile({
         warungName: warungName.trim(),
         warungLogoUrl: logoUrl || undefined,
         address: address.trim() || undefined,
         phone: phone.trim() || undefined,
         timeZone,
+        themeMode: selectedThemeMode,
       });
 
       setToast({
         id: Date.now().toString(),
         type: 'success',
-        message: 'Profil & Zona Waktu Warung berhasil diperbarui!',
+        message: 'Profil, Zona Waktu & Tema Tampilan Warung berhasil diperbarui!',
       });
     } catch {
       setToast({
@@ -226,6 +232,114 @@ export const WarungSettingsPage: React.FC = () => {
                 <span>
                   Waktu Live Warung Sekarang: <strong>{formatDateTimeInTimeZone(new Date(), timeZone)}</strong>
                 </span>
+              </div>
+            </div>
+
+            {/* Mode Tema Tampilan & Dark Mode Auto 6 PM */}
+            <div className="space-y-2 pt-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                  Tema Tampilan & Dark Mode Otomatis *
+                </label>
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border flex items-center gap-1 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800">
+                  {effectiveTheme === 'dark' ? <Moon className="w-3 h-3 text-emerald-400" /> : <Sun className="w-3 h-3 text-amber-500" />}
+                  <span>{effectiveTheme === 'dark' ? 'Mode Gelap Aktif' : 'Mode Terang Aktif'}</span>
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* Option 1: Normal Light Mode */}
+                <div
+                  onClick={() => {
+                    setSelectedThemeMode('light');
+                    setThemeMode('light');
+                  }}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-2 ${
+                    selectedThemeMode === 'light'
+                      ? 'border-emerald-600 bg-emerald-50/50 shadow-sm dark:bg-emerald-950/40 dark:border-emerald-500'
+                      : 'border-slate-200 bg-white hover:border-slate-300 dark:bg-slate-800 dark:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <Sun className="w-5 h-5 text-amber-500" />
+                    <input
+                      type="radio"
+                      name="themeMode"
+                      checked={selectedThemeMode === 'light'}
+                      onChange={() => {
+                        setSelectedThemeMode('light');
+                        setThemeMode('light');
+                      }}
+                      className="accent-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900 dark:text-white text-xs">Normal / Terang</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Tampilan terang sepanjang hari.</p>
+                  </div>
+                </div>
+
+                {/* Option 2: Dark Mode */}
+                <div
+                  onClick={() => {
+                    setSelectedThemeMode('dark');
+                    setThemeMode('dark');
+                  }}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-2 ${
+                    selectedThemeMode === 'dark'
+                      ? 'border-emerald-600 bg-slate-900 text-white shadow-sm dark:border-emerald-500'
+                      : 'border-slate-200 bg-white hover:border-slate-300 dark:bg-slate-800 dark:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <Moon className="w-5 h-5 text-indigo-400" />
+                    <input
+                      type="radio"
+                      name="themeMode"
+                      checked={selectedThemeMode === 'dark'}
+                      onChange={() => {
+                        setSelectedThemeMode('dark');
+                        setThemeMode('dark');
+                      }}
+                      className="accent-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900 dark:text-white text-xs">Gelap / Dark Mode</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Tampilan gelap kontras tinggi.</p>
+                  </div>
+                </div>
+
+                {/* Option 3: Auto Clock Mode (Switches at 6 PM / 18:00) */}
+                <div
+                  onClick={() => {
+                    setSelectedThemeMode('auto');
+                    setThemeMode('auto');
+                  }}
+                  className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between space-y-2 ${
+                    selectedThemeMode === 'auto'
+                      ? 'border-emerald-600 bg-emerald-50/50 shadow-sm dark:bg-emerald-950/40 dark:border-emerald-500'
+                      : 'border-slate-200 bg-white hover:border-slate-300 dark:bg-slate-800 dark:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <Sparkles className="w-5 h-5 text-emerald-600" />
+                    <input
+                      type="radio"
+                      name="themeMode"
+                      checked={selectedThemeMode === 'auto'}
+                      onChange={() => {
+                        setSelectedThemeMode('auto');
+                        setThemeMode('auto');
+                      }}
+                      className="accent-emerald-600"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900 dark:text-white text-xs">Otomatis Jam (6 PM)</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Berubah ke Mode Gelap setelah jam 18:00 WIB.</p>
+                  </div>
+                </div>
               </div>
             </div>
 

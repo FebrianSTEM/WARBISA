@@ -48,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
   return (
     <aside
-      className={`fixed md:sticky top-16 z-30 bg-slate-50/80 backdrop-blur-xl border-r border-slate-200/70 h-[calc(100vh-64px)] flex flex-col justify-between shrink-0 shadow-xl md:shadow-none transition-all duration-300 ease-in-out ${
+      className={`fixed md:sticky top-16 z-30 bg-slate-50/80 dark:bg-slate-900/90 backdrop-blur-xl border-r border-slate-200/70 dark:border-slate-800 h-[calc(100vh-64px)] flex flex-col justify-between shrink-0 shadow-xl md:shadow-none transition-all duration-300 ease-in-out ${
         isOpen
           ? 'w-64 p-4 opacity-100 translate-x-0'
           : 'w-0 p-0 opacity-0 -translate-x-full md:translate-x-0 border-none overflow-hidden pointer-events-none'
@@ -56,10 +56,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     >
       <div className={`space-y-2 transition-opacity duration-200 ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
         <div className="px-3 py-1 flex items-center justify-between">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+          <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider whitespace-nowrap">
             Menu Utama
           </p>
-          <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60 whitespace-nowrap">
+          <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-800 whitespace-nowrap">
             {user?.roleName || 'Kasir'}
           </span>
         </div>
@@ -81,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                   `group relative flex items-center justify-between px-3.5 py-3 rounded-2xl font-bold text-xs sm:text-sm transition-all duration-200 whitespace-nowrap ${
                     isActive
                       ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/25 translate-x-1'
-                      : 'text-slate-600 hover:bg-slate-200/60 hover:text-slate-900'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                   }`
                 }
               >
@@ -90,7 +90,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                     <div className="flex items-center gap-3">
                       <IconComponent
                         className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${
-                          isActive ? 'text-white' : 'text-slate-500 group-hover:text-emerald-700'
+                          isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-emerald-700 dark:group-hover:text-emerald-400'
                         }`}
                       />
                       <span>{menu.title}</span>
@@ -107,12 +107,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
         </nav>
       </div>
 
-      <div className={`p-3.5 bg-white/80 backdrop-blur-xs rounded-2xl border border-slate-200/60 shadow-2xs space-y-1 transition-opacity duration-200 whitespace-nowrap ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
+      <div className={`p-3.5 bg-white/80 dark:bg-slate-800/80 backdrop-blur-xs rounded-2xl border border-slate-200/60 dark:border-slate-700 shadow-2xs space-y-1 transition-opacity duration-200 whitespace-nowrap ${isOpen ? 'opacity-100' : 'opacity-0'}`}>
         <div className="flex items-center justify-between">
-          <p className="font-extrabold text-slate-800 text-xs">WASERBI POS</p>
-          <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-md">v1.2</span>
+          <p className="font-extrabold text-slate-800 dark:text-slate-200 text-xs">WASERBI POS</p>
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded-md">v1.2</span>
         </div>
-        <p className="text-[11px] text-slate-500 font-medium">Sistem Kasir & Stock Ledger Realtime</p>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Sistem Kasir & Stock Ledger Realtime</p>
       </div>
     </aside>
   );
