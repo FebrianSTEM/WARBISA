@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import { Store, LogOut, User, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { LogOut, User, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { Badge } from './Badge';
 
 interface NavbarProps {
@@ -29,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
             {user?.warungLogoUrl ? (
               <img src={user.warungLogoUrl} alt="Logo Toko" className="w-full h-full object-cover" />
             ) : (
-              <Store className="w-5 h-5" />
+              <img src="/waserbi_logo.png" alt="WASERBI Logo" className="w-full h-full object-cover" />
             )}
           </div>
           <div>
