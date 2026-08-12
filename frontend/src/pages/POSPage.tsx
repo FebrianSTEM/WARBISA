@@ -44,7 +44,7 @@ export const POSPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-80px)] flex flex-col lg:grid lg:grid-cols-12 gap-6 p-1 overflow-hidden relative">
+    <div className="h-full flex flex-col lg:grid lg:grid-cols-12 gap-6 p-1 overflow-hidden relative">
       {/* Panel Kiri: Grid Produk & Search (8/12 cols) */}
       <div className="lg:col-span-7 xl:col-span-8 h-full overflow-hidden pb-16 lg:pb-0">
         <ProductCatalogGrid
