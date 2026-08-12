@@ -8,6 +8,7 @@ import {
   BarChart3,
   LayoutDashboard,
   Settings,
+  Users,
   ChevronRight,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -19,6 +20,7 @@ const iconMap: Record<string, LucideIcon> = {
   BarChart3: BarChart3,
   LayoutDashboard: LayoutDashboard,
   Settings: Settings,
+  Users: Users,
 };
 
 interface SidebarProps {
@@ -36,6 +38,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
     { id: '1', title: 'POS Kasir', path: '/pos', iconName: 'ShoppingCart', roles: ['Owner', 'Staff'] },
     { id: '2', title: 'Manajemen Produk', path: '/inventory', iconName: 'Package', roles: ['Owner', 'Staff'] },
     { id: '3', title: 'Low Stock Alert', path: '/low-stock', iconName: 'AlertTriangle', roles: ['Owner', 'Staff'] },
+    ...(user?.roleName === 'Owner'
+      ? [{ id: '5', title: 'Manajemen Kasir', path: '/cashiers', iconName: 'Users', roles: ['Owner'] }]
+      : []),
     { id: '4', title: 'Pengaturan Warung', path: '/settings', iconName: 'Settings', roles: ['Owner', 'Staff'] },
   ];
 

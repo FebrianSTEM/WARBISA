@@ -10,6 +10,7 @@ import { InventoryPage } from './pages/InventoryPage';
 import { LowStockPage } from './pages/LowStockPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { WarungSettingsPage } from './pages/WarungSettingsPage';
+import { CashierManagementPage } from './pages/CashierManagementPage';
 
 // Protected Route Guard Component
 interface ProtectedRouteProps {
@@ -86,6 +87,7 @@ export const App: React.FC = () => {
         {/* Owner-Only Routes */}
         <Route element={<ProtectedRoute allowedRoles={['Owner']} />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/cashiers" element={<CashierManagementPage />} />
         </Route>
 
         {/* Fallback Wildcard */}

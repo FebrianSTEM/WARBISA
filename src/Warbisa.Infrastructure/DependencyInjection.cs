@@ -57,6 +57,7 @@ public static class DependencyInjection
         services.AddScoped<IMidtransService, MidtransService>();
         services.AddScoped<ITransactionEngine, TransactionEngine>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<ICashierService, CashierService>();
 
         // JWT Authentication Configuration
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
