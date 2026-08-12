@@ -16,6 +16,7 @@ interface AuthState {
   logout: () => void;
   fetchMenus: () => Promise<void>;
   initializeAuth: () => void;
+  clearError: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -25,6 +26,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: !!localStorage.getItem('warbisa_token'),
   isLoading: false,
   error: null,
+
+  clearError: () => set({ error: null }),
 
   login: async (usernameOrEmail, password) => {
     set({ isLoading: true, error: null });
