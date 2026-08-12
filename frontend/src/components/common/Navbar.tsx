@@ -12,12 +12,12 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
   const { user, logout } = useAuthStore();
 
   return (
-    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 h-16 px-4 sm:px-6 flex items-center justify-between shadow-xs shrink-0">
+    <header className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 sticky top-0 z-40 h-16 px-4 sm:px-6 flex items-center justify-between shadow-xs shrink-0 transition-colors">
       <div className="flex items-center gap-3">
         {onToggleSidebar && (
           <button
             onClick={onToggleSidebar}
-            className="p-2 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-all border border-slate-200 hover:border-emerald-200"
+            className="p-2 text-slate-600 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-800 rounded-xl transition-all border border-slate-200 dark:border-slate-700 hover:border-emerald-200"
             title={isSidebarOpen ? 'Sembunyikan Menu Sidebar' : 'Tampilkan Menu Sidebar'}
           >
             {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <PanelLeftOpen className="w-5 h-5" />}
@@ -33,10 +33,10 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
             )}
           </div>
           <div>
-            <h1 className="text-base sm:text-lg font-bold text-slate-900 leading-tight uppercase tracking-tight">
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-tight uppercase tracking-tight">
               {user?.warungName || 'WARBISA'}
             </h1>
-            <p className="text-[11px] sm:text-xs text-slate-500 font-medium hidden xs:block">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium hidden xs:block">
               {user?.warungName ? 'Sistem Kasir & Inventaris Toko' : 'Warung Serba Bisa — POS & Inventaris'}
             </p>
           </div>
@@ -45,12 +45,12 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
 
       <div className="flex items-center gap-4">
         {user && (
-          <div className="flex items-center gap-3 border-r border-slate-200 pr-4">
-            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
+          <div className="flex items-center gap-3 border-r border-slate-200 dark:border-slate-800 pr-4">
+            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/80 flex items-center justify-center text-emerald-700 dark:text-emerald-300 font-bold text-sm">
               <User className="w-4 h-4" />
             </div>
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-slate-800 leading-none">{user.fullName || user.username}</p>
+              <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 leading-none">{user.fullName || user.username}</p>
               <div className="mt-0.5">
                 <Badge variant={user.roleName === 'Owner' ? 'success' : 'info'}>
                   {user.roleName}
@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({ isSidebarOpen = true, onToggleSi
 
         <button
           onClick={logout}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-slate-200 hover:border-rose-200"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 hover:border-rose-200"
           title="Keluar dari Sistem"
         >
           <LogOut className="w-4 h-4" />

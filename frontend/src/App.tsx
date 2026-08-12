@@ -41,7 +41,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   }
 
   return (
-    <div className="h-screen bg-[#F8FAFC] flex flex-col font-sans overflow-hidden">
+    <div className="h-screen bg-[#F8FAFC] dark:bg-[#0B0F17] flex flex-col font-sans overflow-hidden transition-colors">
       <Navbar isSidebarOpen={isSidebarOpen} onToggleSidebar={toggleSidebar} />
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
@@ -62,12 +62,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   );
 };
 
+import { useThemeStore } from './store/useThemeStore';
+
 export const App: React.FC = () => {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const applyTheme = useThemeStore((state) => state.applyTheme);
 
   useEffect(() => {
     initializeAuth();
-  }, [initializeAuth]);
+    applyTheme();
+
+    // Check theme clock every minute for seamless 6 PM auto dark mode transition
+    const interval = setInterval(() => {
+      applyTheme();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [initializeAuth, applyTheme]);
 
   return (
     <BrowserRouter>
