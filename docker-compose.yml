@@ -31,8 +31,8 @@ services:
       - JwtSettings__Secret=${JWT_SECRET:-WARBISA_PROD_SUPER_SECRET_KEY_JWT_2026_MIN_32_BYTES}
       - AllowedOrigins__0=http://localhost
       - AllowedOrigins__1=http://localhost:80
-      - AllowedOrigins__2=https://202-10-34-172.sslip.io
-      - AllowedOrigins__3=http://202-10-34-172.sslip.io
+      - AllowedOrigins__2=https://202-10-40-140.sslip.io
+      - AllowedOrigins__3=http://202-10-40-140.sslip.io
     ports:
       - "5000:8080"
     depends_on:
